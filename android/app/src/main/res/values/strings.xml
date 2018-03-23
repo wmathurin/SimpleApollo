@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_type">com.salesforce.login</string>
+	<string name="app_name">SimpleApollo</string>
+	<string name="app_package">com.salesforce</string>
+</resources>
