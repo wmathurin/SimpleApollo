@@ -10,6 +10,7 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		4F3AFF401DC2C79E006FF6B0 /* InitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F3AFF3E1DC2C79E006FF6B0 /* InitialViewController.m */; };
+		4FD0455D2064A1C000A789A6 /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4FD0455C2064A1BF00A789A6 /* MaterialIcons.ttf */; };
 		6F00A4EBBB37F8CE9D7F4535 /* libPods-SimpleApollo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 78A9CFAC4F2F0A1FDF2E7669 /* libPods-SimpleApollo.a */; };
 		B7168FBE1FACC7EB00A48DB5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B7168FBD1FACC7EB00A48DB5 /* LaunchScreen.storyboard */; };
 		CEA8CA061F071C3300448B51 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CEA8CA051F071C3300448B51 /* Images.xcassets */; };
@@ -25,6 +26,7 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = SimpleApollo/main.m; sourceTree = "<group>"; };
 		4F3AFF3D1DC2C79E006FF6B0 /* InitialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InitialViewController.h; path = SimpleApollo/InitialViewController.h; sourceTree = "<group>"; };
 		4F3AFF3E1DC2C79E006FF6B0 /* InitialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = InitialViewController.m; path = SimpleApollo/InitialViewController.m; sourceTree = "<group>"; };
+		4FD0455C2064A1BF00A789A6 /* MaterialIcons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
 		4FF12F8E1DCA93E2004D9EF9 /* SimpleApollo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = SimpleApollo.entitlements; path = SimpleApollo/SimpleApollo.entitlements; sourceTree = "<group>"; };
 		78A9CFAC4F2F0A1FDF2E7669 /* libPods-SimpleApollo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SimpleApollo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE79D28E6E57F5B77FA24716 /* Pods-SimpleApollo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SimpleApollo.release.xcconfig"; path = "Pods/Target Support Files/Pods-SimpleApollo/Pods-SimpleApollo.release.xcconfig"; sourceTree = "<group>"; };
@@ -68,6 +70,7 @@
 		4F3AFF431DC2C869006FF6B0 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				4FD0455C2064A1BF00A789A6 /* MaterialIcons.ttf */,
 				B7168FBD1FACC7EB00A48DB5 /* LaunchScreen.storyboard */,
 				CEA8CA051F071C3300448B51 /* Images.xcassets */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
@@ -181,6 +184,7 @@
 			files = (
 				CEA8CA061F071C3300448B51 /* Images.xcassets in Resources */,
 				B7168FBE1FACC7EB00A48DB5 /* LaunchScreen.storyboard in Resources */,
+				4FD0455D2064A1C000A789A6 /* MaterialIcons.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -227,7 +231,7 @@
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-SimpleApollo/Pods-SimpleApollo-resources.sh",
 				"${PODS_ROOT}/../../mobile_sdk/SalesforceMobileSDK-iOS/shared/resources/SalesforceSDKAssets.xcassets",
-				"$PODS_CONFIGURATION_BUILD_DIR/SalesforceSDKCore/SalesforceSDKResources.bundle",
+				$PODS_CONFIGURATION_BUILD_DIR/SalesforceSDKCore/SalesforceSDKResources.bundle,
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (

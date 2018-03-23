@@ -24,8 +24,33 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { AppRegistry } from 'react-native';
-import { App } from './js/app';
+import React, { Component } from 'react';
+import { ApolloProvider } from 'react-apollo';
+import ApolloClient, { createNetworkInterface } from 'apollo-client';
+import PostList from './postlist';
+import { schema } from './local';
+import { SchemaLink } from 'apollo-link-schema';
+import { InMemoryCache } from "apollo-cache-inmemory";
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 
 
-AppRegistry.registerComponent('SimpleApollo', () => App);
+export class App extends Component {
+  constructor(...args) {
+    super(...args);
+
+    this.client = new ApolloClient({
+      ssr: true,
+      link: new SchemaLink({schema}),
+      cache: new InMemoryCache(),
+      dataIdFromObject: r => r.id,
+    });
+  }
+  render() {
+    return (
+      <ApolloProvider client={this.client}>
+        <PostList />
+      </ApolloProvider>
+    );
+  }
+}
