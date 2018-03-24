@@ -70,6 +70,7 @@ export default graphql(gql`
       id
       title
       dueDate
+      done
       owner {
         id
         firstName
