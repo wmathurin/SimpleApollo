@@ -1,71 +1,113 @@
-import { makeExecutableSchema} from 'graphql-tools';
-import { find, filter } from 'lodash';
+/*
+ * Copyright (c) 2018-present, salesforce.com, inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided
+ * that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ * following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+ * the following disclaimer in the documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of salesforce.com, inc. nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
+import { makeExecutableSchema} from 'graphql-tools'
+import { find, findIndex, filter } from 'lodash'
+
+// Types
 const typeDefs = `
-  type Author {
-    id: Int!
-    firstName: String
-    lastName: String
-    """
-    the list of Posts by this author
-    """
-    posts: [Post]
+  type Person {
+    id: String!
+    firstName: String!
+    lastName: String!
+    tasks: [Task]
   }
 
-  type Post {
-    id: Int!
-    title: String
-    author: Author
-    votes: Int
+  type Task {
+    id: String!
+    title: String!
+    owner: Person!
+    createdDate: Float!
+    dueDate: Float!
+    done: Boolean!
+  }
+
+  input TaskInput {
+    title: String!
+    ownerId: String!
+    dueDate: Float!
   }
 
   # the schema allows the following query:
   type Query {
-    posts: [Post]
-    author(id: Int!): Author
+    tasks: [Task]!
   }
 
   # this schema allows the following mutation:
   type Mutation {
-    upvotePost (
-      postId: Int!
-    ): Post
+    addTask (
+        input: TaskInput       
+    ) : Task
+
+    updateTask (
+        taskId: String!
+        done: Boolean!
+    ) : Task
   }
 `;
 
-// example data
-const authors = [
-    { id: 1, firstName: 'Tom', lastName: 'Coleman' },
-    { id: 2, firstName: 'Sashko', lastName: 'Stubailo' },
-    { id: 3, firstName: 'Mikhail', lastName: 'Novikov' },
-];
-const posts = [
-    { id: 1, authorId: 1, title: 'Introduction to GraphQL', votes: 2 },
-    { id: 2, authorId: 2, title: 'Welcome to Meteor', votes: 3 },
-    { id: 3, authorId: 2, title: 'Advanced GraphQL', votes: 1 },
-    { id: 4, authorId: 3, title: 'Launchpad is Cool', votes: 7 },
-];
+// Starting data
+var seq = 1
+const now = (new Date()).getTime()
+const tomorrow = now + 3600*24*1000
+const dayAfterTomorrow = now + 3600*24*1000*2
+var allPeople = [ { id:`${seq++}`, firstName:'Wolfgang', lastName:'Mathurin' } ]
+var allTasks = [ 
+    { id:`${seq++}`, title:'Get milk', ownerId: allPeople[0].id, createdDate:now, dueDate:tomorrow, done:false },
+    { id:`${seq++}`, title:'Clean car', ownerId: allPeople[0].id, createdDate:now, dueDate:dayAfterTomorrow, done:false }, 
+]
 
+// Resolvers
 const resolvers = {
     Query: {
-        posts: () => posts,
-        author: (_, { id }) => find(authors, { id: id }),
+        tasks: () => allTasks,
     },
     Mutation: {
-        upvotePost: (_, { postId }) => {
-            const post = find(posts, { id: postId });
-            if (!post) {
-                throw new Error(`Couldn't find post with id ${postId}`);
+        addTask: (_, {input: { title, ownerId, dueDate}}) => {
+            let newTask = { id:`${seq++}`, title: title, ownerId: ownerId, createdDate:(new Date()).getTime(), dueDate: dueDate, done:false }
+            allTasks.push(newTask)
+            console.log("tasks-->" + JSON.stringify(allTasks))
+            return newTask
+        },
+        updateTask: (_, { taskId, done }) => {
+            const task = find(allTasks, {id: taskId })
+            if (!task) {
+                throw new Error(`Couldn't find task with id ${task.id}`)
             }
-            post.votes += 1;
-            return post;
+            console.log("task before-->" + JSON.stringify(task))
+            task.done = done
+            console.log("task after-->" + JSON.stringify(task))            
+            return task
         },
     },
-    Author: {
-        posts: (author) => filter(posts, { authorId: author.id }),
+    Person: {
+        tasks: (person) => filter(allTasks, { ownerId: person.id }),
     },
-    Post: {
-        author: (post) => find(authors, { id: post.authorId }),
+    Task: {
+        owner: (task) => find(allPeople, { id: task.ownerId }),
     },
 };
 

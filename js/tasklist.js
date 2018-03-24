@@ -24,38 +24,57 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import React, { Component } from 'react'
-import { ApolloProvider } from 'react-apollo'
-import ApolloClient, { createNetworkInterface } from 'apollo-client'
-import { schema } from './local'
-import { SchemaLink } from 'apollo-link-schema'
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import { graphql } from 'react-apollo'
-import gql from 'graphql-tag'
-import { Header } from 'react-native-elements'
-import TaskList from './tasklist'
+import React from 'react';
+import { View } from 'react-native'
+import { Text, List, ListItem, Card } from 'react-native-elements';
+import { graphql, ApolloProvider } from 'react-apollo';
+import gql from 'graphql-tag';
+import TaskCreator from './taskcreator'
+import TaskToggler from './tasktoggler'
 
+// The data prop, which is provided by the wrapper below contains,
+// a `loading` key while the query is in flight and tasks when ready
+function TaskList({ data: { loading, tasks } }) {
 
-export class App extends Component {
-  constructor(...args) {
-    super(...args);
-
-    this.client = new ApolloClient({
-      ssr: true,
-      link: new SchemaLink({schema}),
-      cache: new InMemoryCache(),
-      dataIdFromObject: r => r.id,
-    });
-  }
-  render() {
+  if (loading) {
+    return (<Text h1>Loading</Text>);
+  } else {
     return (
-      <ApolloProvider client={this.client}>
-        <Header 
-          centerComponent={{ text: 'Todo App', style: { color: '#fff' } }}
-        />      
-        <TaskList />
-      </ApolloProvider>
+      <View>
+        <List>
+                {[...tasks].sort((x, y) => y.dueDate < x.dueDate).map(task => {
+                    return (
+                      <ListItem
+                        key={task.id}
+                        title={task.title}
+                        subtitle={`who: ${task.owner.firstName} ${task.owner.lastName}`}
+                        rightIcon={<TaskToggler task={task} />}
+                      />
+                    );
+                })}
+                <ListItem 
+                  title={<TaskCreator/>}
+                  subtitle={`who: Me`}
+                />
+        </List>
+      </View>
     );
   }
 }
 
+// The `graphql` wrapper executes a GraphQL query and makes the results
+// available on the `data` prop of the wrapped component (TastList here)
+export default graphql(gql`
+  query allTasks {
+    tasks {
+      id
+      title
+      dueDate
+      owner {
+        id
+        firstName
+        lastName
+      }
+    }
+  }
+`)(TaskList);

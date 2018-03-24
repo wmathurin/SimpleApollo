@@ -24,38 +24,25 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import React, { Component } from 'react'
-import { ApolloProvider } from 'react-apollo'
-import ApolloClient, { createNetworkInterface } from 'apollo-client'
-import { schema } from './local'
-import { SchemaLink } from 'apollo-link-schema'
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import { graphql } from 'react-apollo'
+import React from 'react'
+import { TextInput } from 'react-native'
 import gql from 'graphql-tag'
-import { Header } from 'react-native-elements'
-import TaskList from './tasklist'
+import { graphql } from 'react-apollo'
 
-
-export class App extends Component {
-  constructor(...args) {
-    super(...args);
-
-    this.client = new ApolloClient({
-      ssr: true,
-      link: new SchemaLink({schema}),
-      cache: new InMemoryCache(),
-      dataIdFromObject: r => r.id,
-    });
-  }
-  render() {
-    return (
-      <ApolloProvider client={this.client}>
-        <Header 
-          centerComponent={{ text: 'Todo App', style: { color: '#fff' } }}
-        />      
-        <TaskList />
-      </ApolloProvider>
-    );
-  }
+function TaskCreator({ mutate, Task }) {
+  const tomorrow = (new Date()).getTime() + 3600*24*1000
+  return (
+	<TextInput
+  	  onSubmitEditing={ (event) => mutate({ variables: { input: { title: event.nativeEvent.text, ownerId: '1', dueDate: tomorrow } } }) }
+  	  placeholder='Add task...' />  	
+  )
 }
 
+// You can also use `graphql` for GraphQL mutations
+export default graphql(gql`
+  mutation addTask($input: TaskInput) {
+    addTask(input: $input) {
+    	id
+    }
+  }
+`)(TaskCreator);

@@ -24,38 +24,31 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import React, { Component } from 'react'
-import { ApolloProvider } from 'react-apollo'
-import ApolloClient, { createNetworkInterface } from 'apollo-client'
-import { schema } from './local'
-import { SchemaLink } from 'apollo-link-schema'
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import { graphql } from 'react-apollo'
+import React from 'react'
+import { CheckBox } from 'react-native-elements'
 import gql from 'graphql-tag'
-import { Header } from 'react-native-elements'
-import TaskList from './tasklist'
+import { graphql } from 'react-apollo'
 
-
-export class App extends Component {
-  constructor(...args) {
-    super(...args);
-
-    this.client = new ApolloClient({
-      ssr: true,
-      link: new SchemaLink({schema}),
-      cache: new InMemoryCache(),
-      dataIdFromObject: r => r.id,
-    });
-  }
-  render() {
-    return (
-      <ApolloProvider client={this.client}>
-        <Header 
-          centerComponent={{ text: 'Todo App', style: { color: '#fff' } }}
-        />      
-        <TaskList />
-      </ApolloProvider>
-    );
-  }
+// A mutation is made available on a callback called `mutate`
+// Other props of the wrapping component are passed through.
+function TaskToggler({ mutate, task }) {
+  return (
+    <CheckBox
+      iconRight
+      checked={task.done}
+      title={`before: ${new Date(task.dueDate).toLocaleDateString()}`}
+      onPress={() => mutate({ variables: { taskId:task.id, done:!task.done }})}
+    />
+  )
 }
 
+// You can also use `graphql` for GraphQL mutations
+export default graphql(gql`
+  mutation updateTask($taskId: String!, $done: Boolean!) {
+    updateTask(taskId: $taskId, done: $done) {
+      id
+      dueDate
+      done
+    }
+  }
+`)(TaskToggler);
