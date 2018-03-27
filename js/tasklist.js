@@ -26,7 +26,7 @@
 
 import React from 'react'
 import { Text, List, ListItem } from 'react-native-elements'
-import { View } from 'react-native'
+import { ScrollView } from 'react-native'
 import { graphql } from 'react-apollo'
 import TaskToggler from './tasktoggler'
 import { taskListQuery } from './queries'
@@ -56,7 +56,7 @@ class TaskList extends React.Component {
     }
 
     return (
-      <View>
+      <ScrollView style={{flex:1, marginTop:-22}}>
         <List>
           {
             [...this.props.data.tasks]
@@ -64,7 +64,7 @@ class TaskList extends React.Component {
             .map(task => (<TaskListItem task={task} />))
           }
         </List>
-      </View>
+      </ScrollView>
     );
   }
 

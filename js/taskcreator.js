@@ -25,13 +25,19 @@
  */
 
 import React from 'react'
-import { Icon, Input } from 'react-native-elements'
+import { Card, Button, Icon, Input } from 'react-native-elements'
 import gql from 'graphql-tag'
 import { graphql } from 'react-apollo'
 import { taskListQuery, taskFragment } from './queries'
 
 class TaskCreator extends React.Component {
-  addTask( title ) {
+  constructor(...args) {
+    super(...args);
+    this.state = {isAdding: false, title: ''}
+  }
+
+  addTask() {
+    const title = this.state.title
     const ownerId = '1'
     const dueDate = (new Date()).getTime() + 3600*1000
 
@@ -44,17 +50,46 @@ class TaskCreator extends React.Component {
       }
     })
 
-
-    this.refs.input.clear()
+    this.setState({isAdding: false, title: ''})
   }
 
   render () {
-    return (<Input
-        ref='input'
-        placeholder='Add Task'
-        onSubmitEditing={ (event) => this.addTask(event.nativeEvent.text) }
-        leftIcon={<Icon name='tasks' type='font-awesome' size={24} />}
-      />)
+    if (!this.state.isAdding) {
+      return (
+        <Button
+          containerStyle={{alignItems:'stretch'}}
+          title='Add To Do' 
+          onPress={() => { 
+            this.setState({isAdding: true}) 
+          }}
+        />)
+    }
+    else {
+      return (
+        <Card title='Add To Do' containerStyle={{marginBottom:16}}>
+          <Input
+            ref='title'
+            placeholder='Title'
+            value={this.state.title}
+            onChangeText={(text) => this.setState({title: text})}
+          />
+          <Input
+            editable={false}
+            ref='who'
+            placeholder='Who'
+          />
+          <Input
+            editable={false}
+            ref='when'
+            placeholder='When'
+          />
+          <Button
+            buttonStyle={{margin:10}}
+            title='Save'
+            onPress={() => this.addTask()}
+          />
+        </Card>)
+    }
   }
 }
 

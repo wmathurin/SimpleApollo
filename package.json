@@ -11,18 +11,18 @@
         "SalesforceMobileSDK-iOS": "https://github.com/forcedotcom/SalesforceMobileSDK-iOS.git#v6.1.0"
     },
     "dependencies": {
-        "apollo-cache-inmemory": "^1.1.11",
-        "apollo-client": "^2.2.7",
+        "apollo-cache-inmemory": "^1.1.12",
+        "apollo-client": "^2.2.8",
         "apollo-link-schema": "^1.0.6",
         "graphql": "^0.13.2",
         "graphql-tag": "^2.8.0",
         "graphql-tools": "^2.23.1",
         "react": "16.2.0",
-        "react-apollo": "^2.1.0",
+        "react-apollo": "^2.1.1",
         "react-native": "0.53.3",
         "react-native-button": "^2.3.0",
         "react-native-elements": "^1.0.0-beta3",
-        "react-native-force": "https://github.com/forcedotcom/SalesforceMobileSDK-ReactNative.git#v6.1.0",
+        "react-native-force": "git+https://github.com/forcedotcom/SalesforceMobileSDK-ReactNative.git#v6.1.0",
         "react-native-vector-icons": "^4.5.0",
         "react-navigation": "^1.0.0-beta.11",
         "whatwg-fetch": "1.1.1"

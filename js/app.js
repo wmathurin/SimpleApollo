@@ -43,17 +43,16 @@ export class App extends Component {
   render() {
     return (
       <ApolloProvider client={this.client}>
-        <View>
+        <View style={{flex:1}}>
           <Header
             leftComponent={{ icon: 'menu', color: '#fff' }}
             centerComponent={{ text: 'To Do\'s', style: { color: '#fff' } }}
             rightComponent={{ icon: 'home', color: '#fff' }}
           />
-          <TaskCreator />          
           <TaskList />
+          <TaskCreator />                    
         </View>
       </ApolloProvider>
     );
   }
 }
-
