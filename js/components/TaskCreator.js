@@ -28,7 +28,8 @@ import React from 'react'
 import { Card, Button, Icon, Input } from 'react-native-elements'
 import gql from 'graphql-tag'
 import { graphql } from 'react-apollo'
-import { taskListQuery, taskFragment } from './queries'
+
+import { taskListQuery, taskFragment } from '../gql/schema'
 
 class TaskCreator extends React.Component {
   constructor(...args) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-present, salesforce.com, inc.
+ * Copyright (c) 2018-present, salesforce.com, inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided
@@ -24,8 +24,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { AppRegistry } from 'react-native';
-import { App } from './js/App';
+import { find, findIndex, filter } from 'lodash'
 
+// Starting data
+var seq = 1
+const now = (new Date()).getTime()
+const due = now + 3600*8*1000
+var allPeople = [ { id:`${seq++}`, firstName:'Wolfgang', lastName:'Mathurin' } ]
+var allTasks = [ 
+    { id:`${seq++}`, title:'Get milk', ownerId: allPeople[0].id, createdDate:now, dueDate:due, done:false },
+    { id:`${seq++}`, title:'Clean car', ownerId: allPeople[0].id, createdDate:now, dueDate:due, done:false }, 
+]
 
-AppRegistry.registerComponent('SimpleApollo', () => App);
+// Resolvers
+const resolvers = {
+    Query: {
+        tasks: () => allTasks,
+    },
+    Mutation: {
+        addTask: (_, {input: { title, ownerId, dueDate}}) => {
+            const newTask = { id:`${seq++}`, title: title, ownerId: ownerId, createdDate:(new Date()).getTime(), dueDate: dueDate, done:false }
+            allTasks.push(newTask)
+            return newTask
+        },
+        updateTask: (_, { taskId, done }) => {
+            const task = find(allTasks, {id: taskId })
+            if (!task) {
+                throw new Error(`Couldn't find task with id ${task.id}`)
+            }
+            task.done = done
+            return task
+        },
+    },
+    Person: {
+        tasks: (person) => filter(allTasks, { ownerId: person.id }),
+    },
+    Task: {
+        owner: (task) => find(allPeople, { id: task.ownerId }),
+    },
+}
+
+export default resolvers

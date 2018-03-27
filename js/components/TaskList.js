@@ -24,34 +24,53 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import gql from 'graphql-tag'
+import React from 'react'
+import { Text, List, ListItem } from 'react-native-elements'
+import { ScrollView } from 'react-native'
+import { graphql } from 'react-apollo'
 
-export const personFragment = gql`
-fragment personFragment on Person {
-	firstName
-	lastName
+import TaskToggler from './TaskToggler'
+import { taskListQuery } from '../gql/schema'
+
+class TaskListItem extends React.Component {
+  render () {
+    const task = this.props.task
+
+    const subtitle = `who: ${task.owner.firstName} ${task.owner.lastName}\n`
+      + `when: ${new Date(task.dueDate).toLocaleString()}`
+
+    return (<ListItem
+              key={task.id}
+              title={task.title}
+              subtitle={subtitle}
+              subtitleNumberOfLines={2}
+              rightIcon={<TaskToggler task={task} />}
+            />)
+  }
 }
-`
 
-export const taskFragment = gql`
-fragment taskFragment on Task {
-	title
-	dueDate
-	done
-	owner {
-		id
-		... personFragment
+class TaskList extends React.Component {
+
+  render () {
+    if (this.props.data.loading) {
+      return (<Text h1>Loading</Text>);
     }
-}
-${personFragment}	
-`
 
-export const taskListQuery = gql`
-query allTasks {
-	tasks {
-		id
-		... taskFragment
-    }
+    return (
+      <ScrollView style={{flex:1, marginTop:-22}}>
+        <List>
+          {
+            [...this.props.data.tasks]
+            .sort((x, y) => y.dueDate < x.dueDate)
+            .map(task => (<TaskListItem task={task} />))
+          }
+        </List>
+      </ScrollView>
+    );
+  }
+
 }
-${taskFragment}
-`
+
+const TaskListWithData = graphql(taskListQuery)(TaskList)
+
+export default TaskListWithData

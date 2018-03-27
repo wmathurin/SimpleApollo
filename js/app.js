@@ -28,16 +28,17 @@ import { ApolloProvider } from 'react-apollo'
 import React, { Component } from 'react'
 import { View } from 'react-native'
 import { Header, Text } from 'react-native-elements'
-import TaskList from './tasklist'
-import TaskCreator from './taskcreator'
-import { makeClient } from './local'
 
+import { makeClient } from './gql/client'
+import resolvers from './gql/mockResolvers'
+import TaskList from './components/TaskList'
+import TaskCreator from './components/TaskCreator'
 
 export class App extends Component {
   constructor(...args) {
     super(...args);
 
-    this.client = makeClient()
+    this.client = makeClient(resolvers)
   }
 
   render() {

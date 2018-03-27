@@ -24,52 +24,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import React from 'react'
-import { Text, List, ListItem } from 'react-native-elements'
-import { ScrollView } from 'react-native'
-import { graphql } from 'react-apollo'
-import TaskToggler from './tasktoggler'
-import { taskListQuery } from './queries'
+import { makeExecutableSchema} from 'graphql-tools'
+import { SchemaLink } from 'apollo-link-schema'
+import { InMemoryCache } from 'apollo-cache-inmemory' 
+import ApolloClient from 'apollo-client'
 
-class TaskListItem extends React.Component {
-  render () {
-    const task = this.props.task
+import { typeDefs } from './schema'
 
-    const subtitle = `who: ${task.owner.firstName} ${task.owner.lastName}\n`
-      + `when: ${new Date(task.dueDate).toLocaleString()}`
+export const makeClient = (resolvers) => { 
 
-    return (<ListItem
-              key={task.id}
-              title={task.title}
-              subtitle={subtitle}
-              subtitleNumberOfLines={2}
-              rightIcon={<TaskToggler task={task} />}
-            />)
-  }
-}
-
-class TaskList extends React.Component {
-
-  render () {
-    if (this.props.data.loading) {
-      return (<Text h1>Loading</Text>);
+    const logger = {
+        log: (e) => console.log(e)
     }
 
-    return (
-      <ScrollView style={{flex:1, marginTop:-22}}>
-        <List>
-          {
-            [...this.props.data.tasks]
-            .sort((x, y) => y.dueDate < x.dueDate)
-            .map(task => (<TaskListItem task={task} />))
-          }
-        </List>
-      </ScrollView>
-    );
-  }
+    const schema = makeExecutableSchema({
+        typeDefs,
+        resolvers,
+        logger
+    })
 
+    return new ApolloClient({
+      ssr: true,
+      link: new SchemaLink({schema}),
+      cache: new InMemoryCache(),
+      dataIdFromObject: r => r.id,
+    })
 }
 
-const TaskListWithData = graphql(taskListQuery)(TaskList)
-
-export default TaskListWithData
