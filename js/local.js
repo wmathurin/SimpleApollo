@@ -26,58 +26,62 @@
 
 import { makeExecutableSchema} from 'graphql-tools'
 import { find, findIndex, filter } from 'lodash'
+import { SchemaLink } from 'apollo-link-schema'
+import { InMemoryCache } from 'apollo-cache-inmemory' 
+import ApolloClient from 'apollo-client'
+
+import { Alert } from 'react-native'
 
 // Types
 const typeDefs = `
-  type Person {
+type Person {
     id: String!
     firstName: String!
     lastName: String!
     tasks: [Task]
-  }
+}
 
-  type Task {
+type Task {
     id: String!
     title: String!
     owner: Person!
     createdDate: Float!
     dueDate: Float!
     done: Boolean!
-  }
+}
 
-  input TaskInput {
+input TaskInput {
     title: String!
     ownerId: String!
     dueDate: Float!
-  }
+}
 
-  # the schema allows the following query:
-  type Query {
+# the schema allows the following query:
+type Query {
     tasks: [Task]!
-  }
+}
 
-  # this schema allows the following mutation:
-  type Mutation {
+# this schema allows the following mutation:
+type Mutation {
     addTask (
-        input: TaskInput       
+    input: TaskInput       
     ) : Task
 
     updateTask (
-        taskId: String!
-        done: Boolean!
+    taskId: String!
+    done: Boolean!
     ) : Task
-  }
+}
 `;
 
 // Starting data
 var seq = 1
 const now = (new Date()).getTime()
-const tomorrow = now + 3600*24*1000
-const dayAfterTomorrow = now + 3600*24*1000*2
+const due = now + 3600*8*1000
 var allPeople = [ { id:`${seq++}`, firstName:'Wolfgang', lastName:'Mathurin' } ]
 var allTasks = [ 
-    { id:`${seq++}`, title:'Get milk', ownerId: allPeople[0].id, createdDate:now, dueDate:tomorrow, done:false },
-    { id:`${seq++}`, title:'Clean car', ownerId: allPeople[0].id, createdDate:now, dueDate:dayAfterTomorrow, done:false }, 
+    { id:`${seq++}`, title:'Get milk', ownerId: allPeople[0].id, createdDate:now, dueDate:due, done:false },
+    { id:`${seq++}`, title:'Clean car', ownerId: allPeople[0].id, createdDate:now, dueDate:due, done:false }, 
 ]
 
 // Resolvers
@@ -87,9 +91,8 @@ const resolvers = {
     },
     Mutation: {
         addTask: (_, {input: { title, ownerId, dueDate}}) => {
-            let newTask = { id:`${seq++}`, title: title, ownerId: ownerId, createdDate:(new Date()).getTime(), dueDate: dueDate, done:false }
+            const newTask = { id:`${seq++}`, title: title, ownerId: ownerId, createdDate:(new Date()).getTime(), dueDate: dueDate, done:false }
             allTasks.push(newTask)
-            console.log("tasks-->" + JSON.stringify(allTasks))
             return newTask
         },
         updateTask: (_, { taskId, done }) => {
@@ -97,9 +100,7 @@ const resolvers = {
             if (!task) {
                 throw new Error(`Couldn't find task with id ${task.id}`)
             }
-            console.log("task before-->" + JSON.stringify(task))
             task.done = done
-            console.log("task after-->" + JSON.stringify(task))            
             return task
         },
     },
@@ -109,15 +110,24 @@ const resolvers = {
     Task: {
         owner: (task) => find(allPeople, { id: task.ownerId }),
     },
-};
+}
 
 
 const logger = {
     log: (e) => console.log(e)
-};
+}
 
-export const schema = makeExecutableSchema({
+const schema = makeExecutableSchema({
     typeDefs,
     resolvers,
     logger
-});
+})
+
+export const makeClient = () => { return new ApolloClient({
+      ssr: true,
+      link: new SchemaLink({schema}),
+      cache: new InMemoryCache(),
+      dataIdFromObject: r => r.id,
+    })
+}
+

@@ -24,58 +24,52 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import React from 'react';
+import React from 'react'
+import { Text, List, ListItem } from 'react-native-elements'
 import { View } from 'react-native'
-import { Text, List, ListItem, Card } from 'react-native-elements';
-import { graphql, ApolloProvider } from 'react-apollo';
-import gql from 'graphql-tag';
-import TaskCreator from './taskcreator'
+import { graphql } from 'react-apollo'
 import TaskToggler from './tasktoggler'
+import { taskListQuery } from './queries'
 
-// The data prop, which is provided by the wrapper below contains,
-// a `loading` key while the query is in flight and tasks when ready
-function TaskList({ data: { loading, tasks } }) {
+class TaskListItem extends React.Component {
+  render () {
+    const task = this.props.task
 
-  if (loading) {
-    return (<Text h1>Loading</Text>);
-  } else {
+    const subtitle = `who: ${task.owner.firstName} ${task.owner.lastName}\n`
+      + `when: ${new Date(task.dueDate).toLocaleString()}`
+
+    return (<ListItem
+              key={task.id}
+              title={task.title}
+              subtitle={subtitle}
+              subtitleNumberOfLines={2}
+              rightIcon={<TaskToggler task={task} />}
+            />)
+  }
+}
+
+class TaskList extends React.Component {
+
+  render () {
+    if (this.props.data.loading) {
+      return (<Text h1>Loading</Text>);
+    }
+
     return (
       <View>
         <List>
-                {[...tasks].sort((x, y) => y.dueDate < x.dueDate).map(task => {
-                    return (
-                      <ListItem
-                        key={task.id}
-                        title={task.title}
-                        subtitle={`who: ${task.owner.firstName} ${task.owner.lastName}`}
-                        rightIcon={<TaskToggler task={task} />}
-                      />
-                    );
-                })}
-                <ListItem 
-                  title={<TaskCreator/>}
-                  subtitle={`who: Me`}
-                />
+          {
+            [...this.props.data.tasks]
+            .sort((x, y) => y.dueDate < x.dueDate)
+            .map(task => (<TaskListItem task={task} />))
+          }
         </List>
       </View>
     );
   }
+
 }
 
-// The `graphql` wrapper executes a GraphQL query and makes the results
-// available on the `data` prop of the wrapped component (TastList here)
-export default graphql(gql`
-  query allTasks {
-    tasks {
-      id
-      title
-      dueDate
-      done
-      owner {
-        id
-        firstName
-        lastName
-      }
-    }
-  }
-`)(TaskList);
+const TaskListWithData = graphql(taskListQuery)(TaskList)
+
+export default TaskListWithData

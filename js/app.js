@@ -24,36 +24,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import React, { Component } from 'react'
 import { ApolloProvider } from 'react-apollo'
-import ApolloClient, { createNetworkInterface } from 'apollo-client'
-import { schema } from './local'
-import { SchemaLink } from 'apollo-link-schema'
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import { graphql } from 'react-apollo'
-import gql from 'graphql-tag'
-import { Header } from 'react-native-elements'
+import React, { Component } from 'react'
+import { View } from 'react-native'
+import { Header, Text } from 'react-native-elements'
 import TaskList from './tasklist'
+import TaskCreator from './taskcreator'
+import { makeClient } from './local'
 
 
 export class App extends Component {
   constructor(...args) {
     super(...args);
 
-    this.client = new ApolloClient({
-      ssr: true,
-      link: new SchemaLink({schema}),
-      cache: new InMemoryCache(),
-      dataIdFromObject: r => r.id,
-    });
+    this.client = makeClient()
   }
+
   render() {
     return (
       <ApolloProvider client={this.client}>
-        <Header 
-          centerComponent={{ text: 'Todo App', style: { color: '#fff' } }}
-        />      
-        <TaskList />
+        <View>
+          <Header
+            leftComponent={{ icon: 'menu', color: '#fff' }}
+            centerComponent={{ text: 'To Do\'s', style: { color: '#fff' } }}
+            rightComponent={{ icon: 'home', color: '#fff' }}
+          />
+          <TaskCreator />          
+          <TaskList />
+        </View>
       </ApolloProvider>
     );
   }

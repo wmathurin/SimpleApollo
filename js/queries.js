@@ -24,42 +24,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import React from 'react'
-import { CheckBox } from 'react-native-elements'
 import gql from 'graphql-tag'
-import { graphql } from 'react-apollo'
 
-class TaskToggler extends React.Component {
-
-  toggleTask() {
-    const taskId = this.props.task.id
-    const done = !this.props.task.done
-
-    this.props.updateTask({variables: {taskId, done}})
-  }
-
-  render() {
-    const task = this.props.task
-    return (
-      <CheckBox
-        iconRight
-        checked={task.done}
-        onPress={() => this.toggleTask()}
-      />
-    )
-  }
+export const personFragment = gql`
+fragment personFragment on Person {
+	firstName
+	lastName
 }
-
-
-const updateTaskMutation = gql`
-  mutation updateTask($taskId: String!, $done: Boolean!) {
-    updateTask(taskId: $taskId, done: $done) {
-      id
-      done
-    }
-  }
 `
 
-const TaskTogglerWithData = graphql(updateTaskMutation, {name : 'updateTask'})(TaskToggler)
+export const taskFragment = gql`
+fragment taskFragment on Task {
+	title
+	dueDate
+	done
+	owner {
+		id
+		... personFragment
+    }
+}
+${personFragment}	
+`
 
-export default TaskTogglerWithData
+export const taskListQuery = gql`
+query allTasks {
+	tasks {
+		id
+		... taskFragment
+    }
+}
+${taskFragment}
+`

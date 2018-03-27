@@ -25,24 +25,49 @@
  */
 
 import React from 'react'
-import { TextInput } from 'react-native'
+import { Icon, Input } from 'react-native-elements'
 import gql from 'graphql-tag'
 import { graphql } from 'react-apollo'
+import { taskListQuery, taskFragment } from './queries'
 
-function TaskCreator({ mutate, Task }) {
-  const tomorrow = (new Date()).getTime() + 3600*24*1000
-  return (
-	<TextInput
-  	  onSubmitEditing={ (event) => mutate({ variables: { input: { title: event.nativeEvent.text, ownerId: '1', dueDate: tomorrow } } }) }
-  	  placeholder='Add task...' />  	
-  )
+class TaskCreator extends React.Component {
+  addTask( title ) {
+    const ownerId = '1'
+    const dueDate = (new Date()).getTime() + 3600*1000
+
+    this.props.addTask({
+      variables: { input: { title, ownerId, dueDate } },
+      update: (store, { data: { addTask: newTask } }) => {
+        const data = store.readQuery({ query: taskListQuery });
+        data.tasks.push(newTask)
+        store.writeQuery({ query: taskListQuery, data });
+      }
+    })
+
+
+    this.refs.input.clear()
+  }
+
+  render () {
+    return (<Input
+        ref='input'
+        placeholder='Add Task'
+        onSubmitEditing={ (event) => this.addTask(event.nativeEvent.text) }
+        leftIcon={<Icon name='tasks' type='font-awesome' size={24} />}
+      />)
+  }
 }
 
-// You can also use `graphql` for GraphQL mutations
-export default graphql(gql`
+const addTaskMutation = gql`
   mutation addTask($input: TaskInput) {
     addTask(input: $input) {
-    	id
+      id
+      ... taskFragment
     }
-  }
-`)(TaskCreator);
+}
+${taskFragment}
+`
+
+const TaskCreatorWithData = graphql(addTaskMutation, {name : 'addTask'})(TaskCreator)
+
+export default TaskCreatorWithData
