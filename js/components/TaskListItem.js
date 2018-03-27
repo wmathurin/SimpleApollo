@@ -25,35 +25,24 @@
  */
 
 import React from 'react'
-import { Text, List, ListItem } from 'react-native-elements'
-import { ScrollView } from 'react-native'
-import { graphql } from 'react-apollo'
+import { ListItem } from 'react-native-elements'
+import TaskToggler from './TaskToggler'
 
-import TaskListItem from './TaskListItem'
-import { taskListQuery } from '../gql/schema'
-
-class TaskList extends React.Component {
-
+class TaskListItem extends React.Component {
   render () {
-    if (this.props.data.loading) {
-      return (<Text h1>Loading</Text>);
-    }
+    const task = this.props.task
 
-    return (
-      <ScrollView style={{flex:1, marginTop:-22}}>
-        <List>
-          {
-            [...this.props.data.tasks]
-            .sort((x, y) => y.dueDate < x.dueDate)
-            .map(task => (<TaskListItem task={task} />))
-          }
-        </List>
-      </ScrollView>
-    );
+    const subtitle = `who: ${task.owner.firstName} ${task.owner.lastName}\n`
+      + `when: ${new Date(task.dueDate).toLocaleString()}`
+
+    return (<ListItem
+              key={task.id}
+              title={task.title}
+              subtitle={subtitle}
+              subtitleNumberOfLines={2}
+              rightIcon={<TaskToggler task={task} />}
+            />)
   }
-
 }
 
-const TaskListWithData = graphql(taskListQuery)(TaskList)
-
-export default TaskListWithData
+export default TaskListItem
