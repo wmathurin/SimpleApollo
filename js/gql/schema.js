@@ -65,6 +65,11 @@ type Mutation {
     taskId: String!
     done: Boolean!
     ) : Task
+
+    deleteTask (
+    taskId: String!
+    ) : Task
+
 }
 `;
 

@@ -25,8 +25,8 @@
  */
 
 import React from 'react'
-import { Text, List, ListItem } from 'react-native-elements'
-import { ScrollView } from 'react-native'
+import { Text, List, ListItem, ButtonGroup } from 'react-native-elements'
+import { View, ScrollView } from 'react-native'
 import { graphql } from 'react-apollo'
 
 import TaskListItem from './TaskListItem'
@@ -34,21 +34,50 @@ import { taskListQuery } from '../gql/schema'
 
 class TaskList extends React.Component {
 
+  constructor(...args) {
+    super(...args)
+    this.state = {filter: null} // null means:  show all
+                                // true means:  show done
+                                // false means: show not done
+  }
+
+  onChangeFilter(newFilter) {
+    this.setState({filter: newFilter})
+  }
+
+  renderFilterButtonGroup() {
+    const labels = ["All", "Done", "Not Done"]
+    const filterValues = [null, true, false]
+    const selectedIndex = filterValues.indexOf(this.state.filter)
+
+    return (
+           <ButtonGroup
+             onPress={(index) => this.onChangeFilter(filterValues[index])}
+             selectedIndex={selectedIndex}
+             buttons={labels}
+           />
+      )
+  }
+
   render () {
     if (this.props.data.loading) {
       return (<Text h1>Loading</Text>);
     }
 
     return (
-      <ScrollView style={{flex:1, marginTop:-22}}>
-        <List>
-          {
-            [...this.props.data.tasks]
-            .sort((x, y) => y.dueDate < x.dueDate)
-            .map(task => (<TaskListItem task={task} />))
-          }
-        </List>
-      </ScrollView>
+      <View style={{flex:1}}>
+        {this.renderFilterButtonGroup()}
+        <ScrollView style={{flex:1, marginTop:-22}}>
+          <List>
+            {
+              [...this.props.data.tasks]
+              .filter((task) => this.state.filter == null ? true : task.done == this.state.filter)
+              .sort((x, y) => y.dueDate < x.dueDate)
+              .map(task => (<TaskListItem task={task} />))
+            }
+          </List>
+        </ScrollView>
+      </View>
     );
   }
 

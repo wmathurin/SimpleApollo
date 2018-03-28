@@ -33,7 +33,7 @@ import { taskListQuery, taskFragment } from '../gql/schema'
 
 class TaskCreator extends React.Component {
   constructor(...args) {
-    super(...args);
+    super(...args)
     this.state = {isAdding: false, title: ''}
   }
 

@@ -55,6 +55,14 @@ const resolvers = {
             task.done = done
             return task
         },
+        deleteTask: (_, { taskId }) => {
+            const task = find(allTasks, {id: taskId })
+            if (!task) {
+                throw new Error(`Couldn't find task with id ${task.id}`)
+            }
+            allTasks = allTasks.filter((task) => task.id != taskId)
+            return task
+        }
     },
     Person: {
         tasks: (person) => filter(allTasks, { ownerId: person.id }),

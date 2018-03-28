@@ -25,10 +25,28 @@
  */
 
 import React from 'react'
-import { ListItem } from 'react-native-elements'
+import { Icon, ListItem } from 'react-native-elements'
+import { filter } from 'lodash'
+import gql from 'graphql-tag'
+import { graphql } from 'react-apollo'
+
+import { taskListQuery } from '../gql/schema'
 import TaskToggler from './TaskToggler'
 
 class TaskListItem extends React.Component {
+
+  deleteTask () {
+    const taskId = this.props.task.id
+    this.props.deleteTask({
+      variables: { taskId },
+      update: (store, { data: { deleteTask: deletedTask } }) => {
+        const data = store.readQuery({ query: taskListQuery });
+        data.tasks = data.tasks.filter((task) => task.id != deletedTask.id)
+        store.writeQuery({ query: taskListQuery, data });
+      }
+    })
+  }
+
   render () {
     const task = this.props.task
 
@@ -40,9 +58,20 @@ class TaskListItem extends React.Component {
               title={task.title}
               subtitle={subtitle}
               subtitleNumberOfLines={2}
+              leftIcon={<Icon name='delete' color='grey' onPress={() => this.deleteTask()}/>}
               rightIcon={<TaskToggler task={task} />}
             />)
   }
 }
 
-export default TaskListItem
+const deleteTaskMutation = gql`
+  mutation deleteTask($taskId: String!) {
+    deleteTask(taskId: $taskId) {
+      id
+    }
+  }
+`
+
+const TaskListItemWithData = graphql(deleteTaskMutation, {name : 'deleteTask'})(TaskListItem)
+
+export default TaskListItemWithData
