@@ -29,9 +29,9 @@ import { View } from 'react-native'
 import { Card, Button, Icon, Input } from 'react-native-elements'
 import DatePicker from 'react-native-datepicker';
 import gql from 'graphql-tag'
-import { graphql } from 'react-apollo'
+import { compose, graphql } from 'react-apollo'
 
-import { taskListQuery, taskFragment } from '../gql/queries'
+import { taskListQuery, taskFragment, currentUserIdQuery } from '../gql/queries'
 
 class TaskCreator extends React.Component {
   constructor(...args) {
@@ -50,7 +50,7 @@ class TaskCreator extends React.Component {
 
   addTask() {
     const title = this.state.title
-    const ownerId = '1'
+    const ownerId = this.props.data.currentUserId
     const dueDate = new Date(this.state.when).getTime()
 
     this.props.addTask({
@@ -138,6 +138,9 @@ const addTaskMutation = gql`
 ${taskFragment}
 `
 
-const TaskCreatorWithData = graphql(addTaskMutation, {name : 'addTask'})(TaskCreator)
+const TaskCreatorWithData = compose(
+  graphql(currentUserIdQuery), 
+  graphql(addTaskMutation, {name : 'addTask'})
+  )(TaskCreator)
 
 export default TaskCreatorWithData

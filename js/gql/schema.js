@@ -49,7 +49,9 @@ input TaskInput {
 
 # the schema allows the following query:
 type Query {
-    tasks: [Task]!
+    currentUserId: String
+
+    tasks: [Task]
 }
 
 # this schema allows the following mutation:
@@ -59,12 +61,12 @@ type Mutation {
     ) : Task
 
     updateTask (
-    taskId: String!
-    done: Boolean!
+    taskId: String
+    done: Boolean
     ) : Task
 
     deleteTask (
-    taskId: String!
+    taskId: String
     ) : Task
 
 }

@@ -47,11 +47,17 @@ ${personFragment}
 `
 
 export const taskListQuery = gql`
-query allTasks {
+query taskListQuery {
     tasks {
         id
         ... taskFragment
     }
 }
 ${taskFragment}
+`
+
+export const currentUserIdQuery = gql`
+query currentUserIdQuery {
+    currentUserId
+}
 `

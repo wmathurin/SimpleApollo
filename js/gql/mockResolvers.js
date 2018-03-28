@@ -30,15 +30,17 @@ import { find, findIndex, filter } from 'lodash'
 var seq = 1
 const now = (new Date()).getTime()
 const due = now + 3600*8*1000
-var allPeople = [ { id:`${seq++}`, firstName:'Wolfgang', lastName:'Mathurin' } ]
+var me = { id:`${seq++}`, firstName:'Wolfgang', lastName:'Mathurin' }
+var allPeople = [ me ]
 var allTasks = [ 
-    { id:`${seq++}`, title:'Get milk', ownerId: allPeople[0].id, createdDate:now, dueDate:due, done:false },
-    { id:`${seq++}`, title:'Clean car', ownerId: allPeople[0].id, createdDate:now, dueDate:due, done:false }, 
+    { id:`${seq++}`, title:'Get milk', ownerId: me.id, createdDate:now, dueDate:due, done:false },
+    { id:`${seq++}`, title:'Clean car', ownerId: me.id, createdDate:now, dueDate:due, done:false }, 
 ]
 
 // Resolvers
 const resolvers = {
     Query: {
+        currentUserId: () => me.id,
         tasks: () => allTasks,
     },
     Mutation: {
