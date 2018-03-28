@@ -73,7 +73,7 @@ class TaskList extends React.Component {
               [...this.props.data.tasks]
               .filter((task) => this.state.filter == null ? true : task.done == this.state.filter)
               .sort((x, y) => y.dueDate < x.dueDate)
-              .map(task => (<TaskListItem task={task} />))
+              .map(task => (<TaskListItem key={task.id} task={task} />))
             }
           </List>
         </ScrollView>

@@ -25,9 +25,9 @@
  */
 
 import React from 'react'
-import { TouchableOpacity } from 'react-native'
+import { View } from 'react-native'
 import { Card, Button, Icon, Input } from 'react-native-elements'
-import DateTimePicker from 'react-native-modal-datetime-picker';
+import DatePicker from 'react-native-datepicker';
 import gql from 'graphql-tag'
 import { graphql } from 'react-apollo'
 
@@ -36,22 +36,22 @@ import { taskListQuery, taskFragment } from '../gql/schema'
 class TaskCreator extends React.Component {
   constructor(...args) {
     super(...args)
-    this.initState()
+    this.state = this.initialState()
   }
 
-  initState() {
-    this.state = {
+  initialState() {
+    return {
       isAdding: false, 
       title: '', 
       when: '',
       isDateTimePickerVisible: false
-    }    
+    }
   }
 
   addTask() {
     const title = this.state.title
     const ownerId = '1'
-    const dueDate = this.state.when
+    const dueDate = new Date(this.state.when).getTime()
 
     this.props.addTask({
       variables: { input: { title, ownerId, dueDate } },
@@ -62,7 +62,7 @@ class TaskCreator extends React.Component {
       }
     })
 
-    this.initState()
+    this.setState(this.initialState())
   }
 
   render () {
@@ -89,26 +89,40 @@ class TaskCreator extends React.Component {
             placeholder='Who'
             editable={false}
           />
-          <TouchableOpacity onPress={() => this.setState({isDateTimePickerVisible: true})}>
+          <View style={{flexDirection:'row'}}>
             <Input
-              pointerEvents='none'
               placeholder='When'
-              value={this.state.when == '' ? '' : this.state.when.toLocaleString()}
+              value={this.state.when}
               editable={false}
             />
-          </TouchableOpacity>
-          <Button
-            disabled={this.state.title == '' || this.state.when == ''}
-            buttonStyle={{margin:10}}
-            title='Save'
-            onPress={() => this.addTask()}
-          />
-          <DateTimePicker
-            mode='datetime'
-            isVisible={this.state.isDateTimePickerVisible}
-            onConfirm={(date) => this.setState({when: date, isDateTimePickerVisible: false})}
-            onCancel={() => this.setState({isDateTimePickerVisible: false})}
-          />          
+            <DatePicker
+              value={this.state.when}
+              style={{width:32}}
+              date={this.state.when}
+              mode='datetime'
+              placeholder='When'
+              format='MM/DD/YYYY, h:mm:ss a'
+              confirmBtnText='Confirm'
+              cancelBtnText='Cancel'
+              showIcon={true}
+              hideText={true}
+              iconComponent={<Icon color='grey' name='calendar' type='font-awesome'/>}
+              onDateChange={(date) => {this.setState({when: date})}}
+            />
+          </View>
+          <View style={{flexDirection:'row', justifyContent:'center'}}>   
+            <Button
+              disabled={this.state.title == '' || this.state.when == ''}
+              buttonStyle={{margin:10}}
+              title='Save'
+              onPress={() => this.addTask()}
+            />
+            <Button
+                buttonStyle={{margin:10}}
+                title='Cancel'
+                onPress={() => this.setState(this.initialState())}
+              />
+            </View>
         </Card>)
     }
   }

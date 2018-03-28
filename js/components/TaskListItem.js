@@ -54,11 +54,10 @@ class TaskListItem extends React.Component {
       + `when: ${new Date(task.dueDate).toLocaleString()}`
 
     return (<ListItem
-              key={task.id}
               title={task.title}
               subtitle={subtitle}
               subtitleNumberOfLines={2}
-              leftIcon={<Icon name='delete' color='grey' onPress={() => this.deleteTask()}/>}
+              leftIcon={<Icon raised name='delete' color='grey' size={18} onPress={() => this.deleteTask()}/>}
               rightIcon={<TaskToggler task={task} />}
             />)
   }
