@@ -30,7 +30,7 @@ import { View, ScrollView } from 'react-native'
 import { graphql } from 'react-apollo'
 
 import TaskListItem from './TaskListItem'
-import { taskListQuery } from '../gql/schema'
+import { taskListQuery } from '../gql/queries'
 
 class TaskList extends React.Component {
 

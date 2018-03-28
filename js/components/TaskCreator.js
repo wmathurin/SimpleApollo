@@ -31,7 +31,7 @@ import DatePicker from 'react-native-datepicker';
 import gql from 'graphql-tag'
 import { graphql } from 'react-apollo'
 
-import { taskListQuery, taskFragment } from '../gql/schema'
+import { taskListQuery, taskFragment } from '../gql/queries'
 
 class TaskCreator extends React.Component {
   constructor(...args) {

@@ -24,49 +24,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-export const typeDefs = `
-type Person {
-    id: String!
-    firstName: String!
-    lastName: String!
-    tasks: [Task]
+ import gql from 'graphql-tag'
+
+export const personFragment = gql`
+fragment personFragment on Person {
+    firstName
+    lastName
 }
+`
 
-type Task {
-    id: String!
-    title: String!
-    owner: Person!
-    createdDate: Float!
-    dueDate: Float!
-    done: Boolean!
+export const taskFragment = gql`
+fragment taskFragment on Task {
+    title
+    dueDate
+    done
+    owner {
+        id
+        ... personFragment
+    }
 }
+${personFragment}   
+`
 
-input TaskInput {
-    title: String!
-    ownerId: String!
-    dueDate: Float!
+export const taskListQuery = gql`
+query allTasks {
+    tasks {
+        id
+        ... taskFragment
+    }
 }
-
-# the schema allows the following query:
-type Query {
-    tasks: [Task]!
-}
-
-# this schema allows the following mutation:
-type Mutation {
-    addTask (
-    input: TaskInput       
-    ) : Task
-
-    updateTask (
-    taskId: String!
-    done: Boolean!
-    ) : Task
-
-    deleteTask (
-    taskId: String!
-    ) : Task
-
-}
-`;
-
+${taskFragment}
+`

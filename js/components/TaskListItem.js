@@ -30,7 +30,7 @@ import { filter } from 'lodash'
 import gql from 'graphql-tag'
 import { graphql } from 'react-apollo'
 
-import { taskListQuery } from '../gql/schema'
+import { taskListQuery } from '../gql/queries'
 import TaskToggler from './TaskToggler'
 
 class TaskListItem extends React.Component {
