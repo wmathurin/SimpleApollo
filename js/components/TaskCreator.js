@@ -25,7 +25,9 @@
  */
 
 import React from 'react'
+import { TouchableOpacity } from 'react-native'
 import { Card, Button, Icon, Input } from 'react-native-elements'
+import DateTimePicker from 'react-native-modal-datetime-picker';
 import gql from 'graphql-tag'
 import { graphql } from 'react-apollo'
 
@@ -34,13 +36,22 @@ import { taskListQuery, taskFragment } from '../gql/schema'
 class TaskCreator extends React.Component {
   constructor(...args) {
     super(...args)
-    this.state = {isAdding: false, title: ''}
+    this.initState()
+  }
+
+  initState() {
+    this.state = {
+      isAdding: false, 
+      title: '', 
+      when: '',
+      isDateTimePickerVisible: false
+    }    
   }
 
   addTask() {
     const title = this.state.title
     const ownerId = '1'
-    const dueDate = (new Date()).getTime() + 3600*1000
+    const dueDate = this.state.when
 
     this.props.addTask({
       variables: { input: { title, ownerId, dueDate } },
@@ -51,7 +62,7 @@ class TaskCreator extends React.Component {
       }
     })
 
-    this.setState({isAdding: false, title: ''})
+    this.initState()
   }
 
   render () {
@@ -69,26 +80,35 @@ class TaskCreator extends React.Component {
       return (
         <Card title='Add To Do' containerStyle={{marginBottom:16}}>
           <Input
-            ref='title'
+            autoFocus={true}
             placeholder='Title'
             value={this.state.title}
             onChangeText={(text) => this.setState({title: text})}
           />
           <Input
-            editable={false}
-            ref='who'
             placeholder='Who'
-          />
-          <Input
             editable={false}
-            ref='when'
-            placeholder='When'
           />
+          <TouchableOpacity onPress={() => this.setState({isDateTimePickerVisible: true})}>
+            <Input
+              pointerEvents='none'
+              placeholder='When'
+              value={this.state.when == '' ? '' : this.state.when.toLocaleString()}
+              editable={false}
+            />
+          </TouchableOpacity>
           <Button
+            disabled={this.state.title == '' || this.state.when == ''}
             buttonStyle={{margin:10}}
             title='Save'
             onPress={() => this.addTask()}
           />
+          <DateTimePicker
+            mode='datetime'
+            isVisible={this.state.isDateTimePickerVisible}
+            onConfirm={(date) => this.setState({when: date, isDateTimePickerVisible: false})}
+            onCancel={() => this.setState({isDateTimePickerVisible: false})}
+          />          
         </Card>)
     }
   }
