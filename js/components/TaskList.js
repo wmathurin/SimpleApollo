@@ -61,7 +61,7 @@ class TaskList extends React.Component {
 
   render () {
     if (this.props.data.loading) {
-      return (<Text h1>Loading</Text>);
+      return (<Text style={{flex:1, textAlign:'center'}}>Loading</Text>);
     }
 
     return (

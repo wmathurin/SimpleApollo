@@ -30,9 +30,12 @@ import { View } from 'react-native'
 import { Header, Text } from 'react-native-elements'
 
 import { makeClient } from './gql/client'
-import resolvers from './gql/mockResolvers'
 import TaskList from './components/TaskList'
 import TaskCreator from './components/TaskCreator'
+
+// import resolvers from './gql/mockResolvers'
+import resolvers from './gql/restapiResolvers'
+
 
 export class App extends Component {
   constructor(...args) {
