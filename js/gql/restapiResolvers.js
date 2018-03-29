@@ -33,6 +33,12 @@ netDel = forceUtil.promiser(net.del)
 netQuery = forceUtil.promiser(net.query)
 getAuthCredentials = forceUtil.promiser(oauth.getAuthCredentials)
 
+//  
+// Create custom object on server called Task__c with following custom fields
+// - Due_Date__c : DateTime
+// - Done__c: Checkbox
+//
+
 // Resolvers
 const resolvers = {
     Query: {
