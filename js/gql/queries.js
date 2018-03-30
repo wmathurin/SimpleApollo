@@ -46,6 +46,12 @@ fragment taskFragment on Task {
 ${personFragment}   
 `
 
+export const currentUserIdQuery = gql`
+query currentUserIdQuery {
+    currentUserId
+}
+`
+
 export const taskListQuery = gql`
 query taskListQuery {
     tasks {
@@ -56,8 +62,13 @@ query taskListQuery {
 ${taskFragment}
 `
 
-export const currentUserIdQuery = gql`
-query currentUserIdQuery {
-    currentUserId
+
+export const peopleQuery = gql`
+query peopleQuery {
+    people {
+        id
+        ... personFragment
+    }
 }
+${personFragment}
 `

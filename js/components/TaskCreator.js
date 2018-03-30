@@ -25,13 +25,14 @@
  */
 
 import React from 'react'
-import { View } from 'react-native'
+import { View, Picker } from 'react-native'
 import { Card, Button, Icon, Input } from 'react-native-elements'
-import DatePicker from 'react-native-datepicker';
+import DatePicker from 'react-native-datepicker'
+import ModalSelector from 'react-native-modal-selector'
 import gql from 'graphql-tag'
 import { compose, graphql } from 'react-apollo'
 
-import { taskListQuery, taskFragment, currentUserIdQuery } from '../gql/queries'
+import { taskListQuery, taskFragment, currentUserIdQuery, peopleQuery } from '../gql/queries'
 
 class TaskCreator extends React.Component {
   constructor(...args) {
@@ -44,13 +45,15 @@ class TaskCreator extends React.Component {
       isAdding: false, 
       title: '', 
       when: '',
+      whoId: this.props.data.currentUserId,
+      whoName: '', // FIXME
       isDateTimePickerVisible: false
     }
   }
 
   addTask() {
     const title = this.state.title
-    const ownerId = this.props.data.currentUserId
+    const ownerId = this.state.whoId
     const dueDate = new Date(this.state.when).getTime()
 
     this.props.addTask({
@@ -63,6 +66,82 @@ class TaskCreator extends React.Component {
     })
 
     this.setState(this.initialState())
+  }
+
+  renderTitleInput() {
+    return (
+      <Input
+        autoFocus={true}
+        placeholder='Title'
+        value={this.state.title}
+        onChangeText={(text) => this.setState({title: text})}
+      />)
+  }
+
+  renderOwnerPicker() {
+    const pickerData = this.props.data.people.map((person) => {
+      return {
+        key: person.id,
+        label: (person.firstName == '' ? '' : person.firstName + ' ') + person.lastName
+      }
+    })
+
+    return (
+      <ModalSelector
+        data={pickerData}
+        onChange={(option) => {
+          console.log("option===>" + JSON.stringify(option))
+          this.setState({whoId: option.key, whoName: option.value})
+        }}
+      >
+        <Input
+          placeholder='Who'
+          value={this.state.whoName}
+          editable={false}
+        />
+      </ModalSelector>)
+  }
+
+  renderDatePicker() {
+    return (
+      <View style={{flexDirection:'row'}}>
+        <Input
+          placeholder='When'
+          value={this.state.when}
+          editable={false}
+          />
+        <DatePicker
+          value={this.state.when}
+          style={{width:32}}
+          date={this.state.when}
+          mode='datetime'
+          placeholder='When'
+          format='MM/DD/YYYY, h:mm:ss a'
+          confirmBtnText='Confirm'
+          cancelBtnText='Cancel'
+          showIcon={true}
+          hideText={true}
+          iconComponent={<Icon color='grey' name='calendar' type='font-awesome'/>}
+          onDateChange={(date) => {this.setState({when: date})}}
+        />
+      </View>)
+  }
+
+  renderButtons() {
+    return (
+      <View style={{flexDirection:'row', justifyContent:'center'}}>   
+        <Button
+          disabled={this.state.title == '' || this.state.when == '' || this.state.whoId == ''}
+          buttonStyle={{margin:10}}
+          title='Save'
+          onPress={() => this.addTask()}
+        />
+        <Button
+            buttonStyle={{margin:10}}
+            title='Cancel'
+            onPress={() => this.setState(this.initialState())}
+          />
+      </View>)
   }
 
   render () {
@@ -79,50 +158,10 @@ class TaskCreator extends React.Component {
     else {
       return (
         <Card title='Add To Do' containerStyle={{marginBottom:16}}>
-          <Input
-            autoFocus={true}
-            placeholder='Title'
-            value={this.state.title}
-            onChangeText={(text) => this.setState({title: text})}
-          />
-          <Input
-            placeholder='Who'
-            editable={false}
-          />
-          <View style={{flexDirection:'row'}}>
-            <Input
-              placeholder='When'
-              value={this.state.when}
-              editable={false}
-            />
-            <DatePicker
-              value={this.state.when}
-              style={{width:32}}
-              date={this.state.when}
-              mode='datetime'
-              placeholder='When'
-              format='MM/DD/YYYY, h:mm:ss a'
-              confirmBtnText='Confirm'
-              cancelBtnText='Cancel'
-              showIcon={true}
-              hideText={true}
-              iconComponent={<Icon color='grey' name='calendar' type='font-awesome'/>}
-              onDateChange={(date) => {this.setState({when: date})}}
-            />
-          </View>
-          <View style={{flexDirection:'row', justifyContent:'center'}}>   
-            <Button
-              disabled={this.state.title == '' || this.state.when == ''}
-              buttonStyle={{margin:10}}
-              title='Save'
-              onPress={() => this.addTask()}
-            />
-            <Button
-                buttonStyle={{margin:10}}
-                title='Cancel'
-                onPress={() => this.setState(this.initialState())}
-              />
-            </View>
+          {this.renderTitleInput()}
+          {this.renderOwnerPicker()}
+          {this.renderDatePicker()}
+          {this.renderButtons()}
         </Card>)
     }
   }
@@ -140,6 +179,7 @@ ${taskFragment}
 
 const TaskCreatorWithData = compose(
   graphql(currentUserIdQuery), 
+  graphql(peopleQuery),
   graphql(addTaskMutation, {name : 'addTask'})
   )(TaskCreator)
 

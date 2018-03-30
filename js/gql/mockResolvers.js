@@ -41,6 +41,7 @@ var allTasks = [
 const resolvers = {
     Query: {
         currentUserId: () => me.id,
+        people: () => allPeople,
         tasks: () => allTasks,
     },
     Mutation: {

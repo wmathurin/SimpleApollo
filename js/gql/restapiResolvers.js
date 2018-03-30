@@ -41,7 +41,7 @@ getAuthCredentials = forceUtil.promiser(oauth.getAuthCredentials)
 //
 
 // Data loaders
-const userLoader = new DataLoader((ids) => {
+const peopleLoader = new DataLoader((ids) => {
 	const inClause = ids.map((id) => `'${id}'`).join(',')
 	console.log(`===> SERVER SOQL: User ${inClause}`)	
 	return netQuery(`select Id, FirstName, LastName from User where Id in (${inClause})`)
@@ -62,9 +62,30 @@ const resolvers = {
     Query: {
     	currentUserId:() => getAuthCredentials().then((creds) => creds.userId),
 
+    	people: () => {
+    		console.log('===> SERVER SOQL: all User')
+    		return netQuery('select Id, FirstName, LastName from User LIMIT 256')
+	    		.then((response) => { 
+	    			console.log('response===>' + JSON.stringify(response))
+	    			return response.records.map((row) => {
+	    				return {
+	    					id: row.Id,
+							firstName: row.FirstName,
+							lastName: row.LastName
+	    				}
+	    			})
+	    		})
+	    		.then((people) => {
+					people.forEach((person) => {
+						peopleLoader.prime(person.id, person)
+					})	    			
+					return people
+	    		})
+    	},
+
     	tasks: () => {
     		console.log('===> SERVER SOQL: all Task__c')
-    		return netQuery('select Id, Name, FORMAT(CreatedDate), FORMAT(Due_Date__c), Done__c, OwnerId from Task__c')
+    		return netQuery('select Id, Name, FORMAT(CreatedDate), FORMAT(Due_Date__c), Done__c, OwnerId from Task__c LIMIT 256')
 	    		.then((response) => { 
 	    			console.log('response===>' + JSON.stringify(response))
 	    			return response.records.map((row) => {
@@ -119,14 +140,26 @@ const resolvers = {
 
     Person: {
         tasks: (person) => {
-        	// TBD
-        	return []
+    		console.log(`===> SERVER SOQL: Task__c for ${person.id}`)
+    		return netQuery(`select Id, Name, FORMAT(CreatedDate), FORMAT(Due_Date__c), Done__c from Task__c where OwnerId = ${person.id}`)
+	    		.then((response) => { 
+	    			return response.records.map((row) => {
+	    				return {
+	    					id: row.Id,
+	    					title: row.Name,
+	    					createdDate: new Date(row.CreatedDate).getTime(),
+	    					dueDate: new Date(row.Due_Date__c).getTime(),
+	    					done: row.Done__c,
+	    					ownerId: person.id,
+	    				}
+	    			})
+	    		})
         }
     },
 
     Task: {
         owner: (task) => {
-        	return userLoader.load(task.ownerId)
+        	return peopleLoader.load(task.ownerId)
         }
     },    
 }

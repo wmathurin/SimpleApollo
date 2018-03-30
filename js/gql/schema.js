@@ -27,7 +27,7 @@
 export const typeDefs = `
 type Person {
     id: String!
-    firstName: String!
+    firstName: String
     lastName: String!
     tasks: [Task]
 }
@@ -51,6 +51,8 @@ input TaskInput {
 type Query {
     currentUserId: String
 
+    people: [Person]
+    
     tasks: [Task]
 }
 
