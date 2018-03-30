@@ -25,6 +25,7 @@
  */
 
 import {oauth, net, forceUtil} from 'react-native-force'
+import DataLoader from 'dataloader'
 
 netCreate = forceUtil.promiser(net.create)
 netRetrieve = forceUtil.promiser(net.retrieve)
@@ -39,15 +40,33 @@ getAuthCredentials = forceUtil.promiser(oauth.getAuthCredentials)
 // - Done__c: Checkbox
 //
 
+// Data loaders
+const userLoader = new DataLoader((ids) => {
+	const inClause = ids.map((id) => `'${id}'`).join(',')
+	console.log(`===> SERVER SOQL: User ${inClause}`)	
+	return netQuery(`select Id, FirstName, LastName from User where Id in (${inClause})`)
+	.then((response) => { 
+		console.log('response===>' + JSON.stringify(response))		
+		return response.records.map((row) => {
+			return {
+				id: row.Id,
+				firstName: row.FirstName,
+				lastName: row.LastName
+			}
+		})
+	})
+})	
+
 // Resolvers
 const resolvers = {
     Query: {
     	currentUserId:() => getAuthCredentials().then((creds) => creds.userId),
 
     	tasks: () => {
-    		console.log('===> SERVER CALL: SOQL')
+    		console.log('===> SERVER SOQL: all Task__c')
     		return netQuery('select Id, Name, FORMAT(CreatedDate), FORMAT(Due_Date__c), Done__c, OwnerId from Task__c')
 	    		.then((response) => { 
+	    			console.log('response===>' + JSON.stringify(response))
 	    			return response.records.map((row) => {
 	    				return {
 	    					id: row.Id,
@@ -67,6 +86,7 @@ const resolvers = {
     		console.log(`===> SERVER CREATE Task__c`)        	
 		    return netCreate('Task__c', {Name: title, ownerId, Due_Date__c: new Date(dueDate).toISOString(), Done__c: false})
 		        .then((response) => {
+	    			console.log('response===>' + JSON.stringify(response))
 		        	return {
 		        		id: response.id,
 		        		title,
@@ -106,15 +126,7 @@ const resolvers = {
 
     Task: {
         owner: (task) => {
-    		console.log(`===> SERVER RETRIEVE: User ${task.ownerId}`)        	
-        	return netRetrieve('User', task.ownerId, 'Id, FirstName, LastName')
-        		.then((response) => {
-        			return {
-	        			id: response.Id,
-	        			firstName: response.FirstName,
-	        			lastName: response.LastName
-        			}
-        		})
+        	return userLoader.load(task.ownerId)
         }
     },    
 }
