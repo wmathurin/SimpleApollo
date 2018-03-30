@@ -41,7 +41,6 @@ const makeResolvers = () => {
 
     return {
         Query: {
-            currentUserId: () => me.id,
             people: () => allPeople,
             tasks: () => allTasks,
         },

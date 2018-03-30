@@ -32,7 +32,9 @@ import ModalSelector from 'react-native-modal-selector'
 import gql from 'graphql-tag'
 import { compose, graphql } from 'react-apollo'
 
-import { taskListQuery, taskFragment, currentUserIdQuery, peopleQuery } from '../gql/queries'
+import { taskListQuery, taskFragment, currentUserQuery, peopleQuery } from '../gql/queries'
+
+const nameFromPerson = (person) => (person.firstName == '' ? '' : person.firstName + ' ') + person.lastName
 
 class TaskCreator extends React.Component {
   constructor(...args) {
@@ -45,8 +47,8 @@ class TaskCreator extends React.Component {
       isAdding: false, 
       title: '', 
       when: '',
-      whoId: this.props.data.currentUserId,
-      whoName: '', // FIXME
+      whoId: '',
+      whoName: '',
       isDateTimePickerVisible: false
     }
   }
@@ -82,7 +84,7 @@ class TaskCreator extends React.Component {
     const pickerData = this.props.data.people.map((person) => {
       return {
         key: person.id,
-        label: (person.firstName == '' ? '' : person.firstName + ' ') + person.lastName
+        label: nameFromPerson(person)
       }
     })
 
@@ -178,7 +180,6 @@ ${taskFragment}
 `
 
 const TaskCreatorWithData = compose(
-  graphql(currentUserIdQuery), 
   graphql(peopleQuery),
   graphql(addTaskMutation, {name : 'addTask'})
   )(TaskCreator)

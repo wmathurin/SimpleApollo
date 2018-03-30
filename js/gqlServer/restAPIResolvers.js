@@ -61,8 +61,6 @@ const makeResolvers = () => {
 
 	return {	
 	    Query: {
-	    	currentUserId:() => getAuthCredentials().then((creds) => creds.userId),
-
 	    	people: () => {
 	    		console.log('===> SERVER SOQL: all User')
 	    		return netQuery('select Id, FirstName, LastName from User LIMIT 256')

@@ -46,11 +46,6 @@ fragment taskFragment on Task {
 ${personFragment}   
 `
 
-export const currentUserIdQuery = gql`
-query currentUserIdQuery {
-    currentUserId
-}
-`
 
 export const taskListQuery = gql`
 query taskListQuery {

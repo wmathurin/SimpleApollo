@@ -41,7 +41,7 @@ export class App extends Component {
   constructor(...args) {
     super(...args);
 
-    this.client = makeClient(typeDefs, makeMockResolvers())
+    this.client = makeClient(typeDefs, makeRestAPIResolvers())
   }
 
   render() {

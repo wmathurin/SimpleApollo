@@ -49,7 +49,6 @@ input TaskInput {
 
 # the schema allows the following query:
 type Query {
-    currentUserId: String
 
     people: [Person]
     
@@ -58,6 +57,7 @@ type Query {
 
 # this schema allows the following mutation:
 type Mutation {
+
     addTask (
     input: TaskInput       
     ) : Task
