@@ -26,7 +26,7 @@
 
 import React from 'react'
 import { TouchableOpacity, View } from 'react-native'
-import { Card, Button, Icon, Input } from 'react-native-elements'
+import { Card, Button, Icon, Input, colors } from 'react-native-elements'
 import DatePicker from 'react-native-datepicker'
 import ModalSelector from 'react-native-modal-selector'
 import gql from 'graphql-tag'
@@ -125,6 +125,7 @@ class TaskCreator extends React.Component {
           format='MM/DD/YYYY, h:mm:ss a'
           confirmBtnText='Confirm'
           cancelBtnText='Cancel'
+          customStyles={ {btnTextConfirm: {color: colors.primary} } }
           showIcon={true}
           hideText={true}
           iconComponent={<Icon color='grey' name='calendar' type='font-awesome'/>}
