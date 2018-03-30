@@ -25,7 +25,7 @@
  */
 
 import React from 'react'
-import { View, Picker } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
 import { Card, Button, Icon, Input } from 'react-native-elements'
 import DatePicker from 'react-native-datepicker'
 import ModalSelector from 'react-native-modal-selector'
@@ -107,12 +107,16 @@ class TaskCreator extends React.Component {
   renderDatePicker() {
     return (
       <View style={{flexDirection:'row'}}>
-        <Input
-          placeholder='When'
-          value={this.state.when}
-          editable={false}
-          />
+        <TouchableOpacity onPress={() => this.refs.datePicker.onPressDate()}>
+          <Input
+            pointerEvents='none'
+            placeholder='When'
+            value={this.state.when}
+            editable={false}
+            />
+        </TouchableOpacity>
         <DatePicker
+          ref='datePicker'
           value={this.state.when}
           style={{width:32}}
           date={this.state.when}
