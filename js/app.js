@@ -27,7 +27,8 @@
 import { ApolloProvider } from 'react-apollo'
 import React, { Component } from 'react'
 import { View } from 'react-native'
-import { Header, Text } from 'react-native-elements'
+import { Header, Text, Icon } from 'react-native-elements'
+import { Menu, MenuProvider, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 
 import TaskList from './components/TaskList'
 import TaskCreator from './components/TaskCreator'
@@ -41,21 +42,35 @@ export class App extends Component {
   constructor(...args) {
     super(...args);
 
-    this.client = makeClient(typeDefs, makeRestAPIResolvers())
+    this.state = {makeResolvers: makeMockResolvers}
+  }
+
+  renderResolverMenu() {
+    return (
+          <Menu ref='menu' onSelect={(value) => this.setState({makeResolvers: value}) }>
+            <MenuTrigger>
+              <Icon name='menu' color='#fff'/>
+            </MenuTrigger>
+            <MenuOptions>
+              <MenuOption value={makeMockResolvers} text='Use Mock Resolvers' />
+              <MenuOption value={makeRestAPIResolvers} text='Use Rest API Resolvers' />
+            </MenuOptions>
+          </Menu>)
   }
 
   render() {
     return (
-      <ApolloProvider client={this.client}>
-        <View style={{flex:1}}>
-          <Header
-            leftComponent={{ icon: 'menu', color: '#fff' }}
-            centerComponent={{ text: 'To Do\'s', style: { color: '#fff' } }}
-            rightComponent={{ icon: 'home', color: '#fff' }}
-          />
-          <TaskList />
-          <TaskCreator />                    
-        </View>
+      <ApolloProvider client={makeClient(typeDefs, this.state.makeResolvers())}>
+        <MenuProvider>
+          <View style={{flex:1}}>
+            <Header
+              leftComponent={this.renderResolverMenu()}
+              centerComponent={{ text: 'To Do\'s', style: { color: '#fff' } }}
+            />
+            <TaskList />
+            <TaskCreator />                    
+          </View>
+        </MenuProvider>
       </ApolloProvider>
     );
   }

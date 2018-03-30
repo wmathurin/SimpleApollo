@@ -25,6 +25,7 @@
     "react-native-elements": "^1.0.0-beta3",
     "react-native-force": "git+https://github.com/forcedotcom/SalesforceMobileSDK-ReactNative.git#v6.1.0",
     "react-native-modal-selector": "0.0.26",
+    "react-native-popup-menu": "^0.12.3",
     "react-native-vector-icons": "^4.5.0",
     "react-navigation": "^1.0.0-beta.11",
     "whatwg-fetch": "1.1.1"
