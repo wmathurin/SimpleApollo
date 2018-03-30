@@ -29,19 +29,19 @@ import React, { Component } from 'react'
 import { View } from 'react-native'
 import { Header, Text } from 'react-native-elements'
 
-import { makeClient } from './gql/client'
 import TaskList from './components/TaskList'
 import TaskCreator from './components/TaskCreator'
 
-// import resolvers from './gql/mockResolvers'
-import resolvers from './gql/restapiResolvers'
-
+import { typeDefs } from './gqlServer/schema'
+import { makeClient } from './gql/client'
+import makeMockResolvers from './gqlServer/mockResolvers'
+import makeRestAPIResolvers from './gqlServer/restAPIResolvers'
 
 export class App extends Component {
   constructor(...args) {
     super(...args);
 
-    this.client = makeClient(resolvers)
+    this.client = makeClient(typeDefs, makeMockResolvers())
   }
 
   render() {

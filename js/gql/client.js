@@ -29,9 +29,7 @@ import { SchemaLink } from 'apollo-link-schema'
 import { InMemoryCache } from 'apollo-cache-inmemory' 
 import ApolloClient from 'apollo-client'
 
-import { typeDefs } from './schema'
-
-export const makeClient = (resolvers) => { 
+export const makeClient = (typeDefs, resolvers) => { 
 
     const logger = {
         log: (e) => console.log(e)
