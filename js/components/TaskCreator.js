@@ -91,7 +91,7 @@ class TaskCreator extends React.Component {
         data={pickerData}
         onChange={(option) => {
           console.log("option===>" + JSON.stringify(option))
-          this.setState({whoId: option.key, whoName: option.value})
+          this.setState({whoId: option.key, whoName: option.label})
         }}
       >
         <Input
