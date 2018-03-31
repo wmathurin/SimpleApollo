@@ -26,7 +26,7 @@
 
 import React from 'react'
 import { Text, List, ListItem, ButtonGroup } from 'react-native-elements'
-import { View, ScrollView } from 'react-native'
+import { View, ScrollView, RefreshControl } from 'react-native'
 import { graphql } from 'react-apollo'
 
 import TaskListItem from './TaskListItem'
@@ -36,13 +36,19 @@ class TaskList extends React.Component {
 
   constructor(...args) {
     super(...args)
-    this.state = {filter: null} // null means:  show all
-                                // true means:  show done
-                                // false means: show not done
+    this.state = {
+      refreshing: false,
+      filter: null // null means:  show all, true means: show done, false means: show not done
+    } 
   }
 
   onChangeFilter(newFilter) {
     this.setState({filter: newFilter})
+  }
+
+  onRefresh() {
+    this.props.data.refetch()
+      .then(() => this.setState({refreshing: false}))
   }
 
   renderFilterButtonGroup() {
@@ -67,7 +73,14 @@ class TaskList extends React.Component {
     return (
       <View style={{flex:1}}>
         {this.renderFilterButtonGroup()}
-        <ScrollView style={{flex:1}}>
+        <ScrollView style={{flex:1}}
+          refreshControl={
+                    <RefreshControl
+                      refreshing={this.state.refreshing}
+                      onRefresh={() => this.onRefresh()}                    
+                    />
+                  }        
+        >
           <List>
             {
               [...this.props.data.tasks]
