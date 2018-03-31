@@ -1,0 +1,25 @@
+{
+  "syncs": [
+    {
+      "syncName": "syncDownTasks",
+      "syncType": "syncDown",
+      "soupName": "Task__c",
+      "target": {"type":"soql", "query":"select Id, Name, FORMAT(CreatedDate), FORMAT(Due_Date__c), Done__c, OwnerId from Task__c"},
+      "options": {"mergeMode":"OVERWRITE"}
+    },
+    {
+      "syncName": "syncDownUsers",
+      "syncType": "syncDown",
+      "soupName": "User",
+      "target": {"type":"soql", "query":"select Id, FirstName, LastName from User"},
+      "options": {"mergeMode":"OVERWRITE"}
+    },
+    ,
+    {
+      "syncName": "syncUpTasks",
+      "syncType": "syncUp",
+      "soupName": "Task__c",
+      "options": {"mergeMode":"OVERWRITE"}
+    }
+  ]
+}
