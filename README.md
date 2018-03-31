@@ -33,7 +33,7 @@ The UI integration is usually done by wrapping a component into a higher level c
 - provide integration with back-end (decomposition of queries and composition of results),
 - execute the requested mutations and queries.
 
-The back-end integration is usually done through "resolvers" that can do things like get object by id, run named query or mutation etc.
+The back-end integration is usually done through "resolvers" that can do things like get object by id, run query or mutation (which are defined in the schema).
 
 Major GraphQL clients include Apollo Client and Relay. GraphQL servers are available for multiple languages, including JavaScript, Python, Ruby, Java, C#, Scala, Go, Elixir, Erlang, PHP, and Clojure. 
 
@@ -68,17 +68,16 @@ We should have a JavaScript GraphQL client and server running in "javascript-lan
 <details><summary>[expand]</summary>
 
 There are several options:
-- Relay (by Facebook) 
-- Apollo 
+- [Relay (by Facebook)](https://facebook.github.io/relay/)
+- [Apollo](https://www.apollographql.com/)
 
 There are good resources online comparing both. See [this one](https://blog.graph.cool/relay-vs-apollo-comparing-graphql-clients-for-react-apps-b40af58c1534) or [that one](https://www.codazen.com/choosing-graphql-client-apollo-vs-relay/).
 
-
 We decided to prototype with **Apollo** for the following reasons:
-- easier learning curve
-- arguably just as feature rich
-- supports SSR (server side rendering) out of the box - see [here](https://www.apollographql.com/docs/react/features/server-side-rendering.html#server-rendering)
-- adoption has been steadily increasing and is now outpacing relay - see [apollo](https://www.npmjs.com/package/apollo-client) vs [relay](https://www.npmjs.com/package/graphql-relay)
+- easier learning curve,
+- arguably just as feature rich,
+- supports SSR (server side rendering) out of the box - see [here](https://www.apollographql.com/docs/react/features/server-side-rendering.html#server-rendering),
+- adoption has been steadily increasing and is now outpacing relay - see [apollo](https://www.npmjs.com/package/apollo-client) vs [relay](https://www.npmjs.com/package/graphql-relay).
 
 With more time, we would prototype with Relay as well.
 
@@ -116,11 +115,12 @@ For the GraphQL server (SSR support), we used [Apollo Schema Link](https://www.a
 
 We completely changed the application to give you a list of tasks (todos).
 Each task has an owner and due date and can either be done or not.
-The resolvers are still working only with mock data.
 The main screen shows a task list which can be deleted or marked as complete or not.
 There is an add button which brings up a card for creating a new task. It has a date picker (but the owner is always you - Owner picker was added later).
 
 It is making use of GraphQL for querying and updating, adding and deleting records.
+
+The resolvers are still working only with mock data.
 
 Key files:
 - the [schema](https://github.com/wmathurin/SimpleApollo/blob/3_todo_app_mock_resolvers/js/gql/schema.js)
@@ -149,7 +149,7 @@ To render the list, the resolvers ends up running a [SOQL query](https://github.
 ### 5_todo_app_restapi_resolvers_dataloader
 <details><summary>[expand]</summary>
 
-To make things better, we introduced a [data loader](https://github.com/facebook/dataloader) for the users.
+To make things better, we leverage [Facebook Dataloader](https://github.com/facebook/dataloader) for the users.
 As a result, to render the list, the resolvers now run a SOQL query to get the tasks followed by a single SOQL query to get the users.
 </details>
 
@@ -159,7 +159,7 @@ As a result, to render the list, the resolvers now run a SOQL query to get the t
 In this step, we added an owner picker in the component used for creating tasks: [TaskCreator](https://github.com/wmathurin/SimpleApollo/blob/6_todo_app_owner_picker/js/components/TaskCreator.js#L83).
 
 We had to declare a [new query](https://github.com/wmathurin/SimpleApollo/blob/6_todo_app_owner_picker/js/gqlServer/schema.js#L53) in the schema.
-We had to had a [resolver](https://github.com/wmathurin/SimpleApollo/blob/6_todo_app_owner_picker/js/gqlServer/restAPIResolvers.js#L64) for it.
+We had to add a [resolver](https://github.com/wmathurin/SimpleApollo/blob/6_todo_app_owner_picker/js/gqlServer/restAPIResolvers.js#L64) for it.
 And of course, we had to modify [TaskCreator](https://github.com/wmathurin/SimpleApollo/blob/6_todo_app_owner_picker/js/components/TaskCreator.js#L183) to indicate it needs that data.
 
 </details>
