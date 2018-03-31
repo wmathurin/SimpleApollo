@@ -151,6 +151,10 @@ class TaskCreator extends React.Component {
   }
 
   render () {
+    if (this.props.data.loading) {
+      return (<Text style={{flex:1, textAlign:'center'}}>Loading</Text>);
+    }
+
     if (!this.state.isAdding) {
       return (
         <Button
