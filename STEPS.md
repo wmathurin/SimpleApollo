@@ -21,6 +21,7 @@ It is making use of GraphQL for querying and updating records.
 The schema and the resolvers are defined in this [file](https://github.com/wmathurin/SimpleApollo/blob/2_upvote_app/js/local.js).
 
 For the UI components, we used [React Native Elements](https://github.com/react-native-training/react-native-elements/tree/v1.0.0-beta3).
+For icons, we used [React Native Vector Icons](https://github.com/oblador/react-native-vector-icons).
 For the GraphQL client, we used the [Apollo GraphQL client](https://github.com/apollographql/apollo-client).
 For the GraphQL server (SSR support), we used [Apollo Schema Link](https://www.apollographql.com/docs/link/links/schema.html).
 </details>
