@@ -24,7 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {oauth, net, forceUtil} from 'react-native-force'
+import {net, forceUtil} from 'react-native-force'
 import DataLoader from 'dataloader'
 
 netCreate = forceUtil.promiser(net.create)
@@ -32,7 +32,6 @@ netRetrieve = forceUtil.promiser(net.retrieve)
 netUpdate = forceUtil.promiser(net.update)
 netDel = forceUtil.promiser(net.del)
 netQuery = forceUtil.promiser(net.query)
-getAuthCredentials = forceUtil.promiser(oauth.getAuthCredentials)
 
 //
 // Note: you need to create custom object on server called Task__c with following custom fields
@@ -42,38 +41,44 @@ getAuthCredentials = forceUtil.promiser(oauth.getAuthCredentials)
 
 const makeResolvers = () => {
 
-	// Data loaders
-	const peopleLoader = new DataLoader((ids) => {
-		const inClause = ids.map((id) => `'${id}'`).join(',')
-		console.log(`===> SERVER SOQL: User ${inClause}`)	
-		return netQuery(`select Id, FirstName, LastName from User where Id in (${inClause})`)
-		.then((response) => { 
-			console.log('response===>' + JSON.stringify(response))		
-			return response.records.map((row) => {
-				return {
+	// Response processors
+	const processUserSoqlResponse = (response) => { 
+		return response.records.map((row) => {
+			return {
 					id: row.Id,
 					firstName: row.FirstName,
 					lastName: row.LastName
 				}
-			})
 		})
-	})	
+	}
+
+	const processTaskSoqlResponse = (response) => { 
+		return response.records.map((row) => {
+			return {
+				id: row.Id,
+				title: row.Name,
+				createdDate: new Date(row.CreatedDate).getTime(),
+				dueDate: new Date(row.Due_Date__c).getTime(),
+				done: row.Done__c,
+				ownerId: row.OwnerId,
+			}
+		})
+	}
+
+	// Data loader
+	const peopleLoader = new DataLoader((ids) => {
+		const inClause = ids.map((id) => `'${id}'`).join(',')
+		console.log(`===> SERVER SOQL: User ${inClause}`)	
+		return netQuery(`select Id, FirstName, LastName from User where Id in (${inClause})`)
+		.then(processUserSoqlResponse)
+	})
 
 	return {	
 	    Query: {
 	    	people: () => {
 	    		console.log('===> SERVER SOQL: all User')
 	    		return netQuery('select Id, FirstName, LastName from User LIMIT 256')
-		    		.then((response) => { 
-		    			console.log('response===>' + JSON.stringify(response))
-		    			return response.records.map((row) => {
-		    				return {
-		    					id: row.Id,
-								firstName: row.FirstName,
-								lastName: row.LastName
-		    				}
-		    			})
-		    		})
+		    		.then(processUserSoqlResponse)
 		    		.then((people) => {
 						people.forEach((person) => {
 							peopleLoader.prime(person.id, person)
@@ -85,19 +90,7 @@ const makeResolvers = () => {
 	    	tasks: () => {
 	    		console.log('===> SERVER SOQL: all Task__c')
 	    		return netQuery('select Id, Name, FORMAT(CreatedDate), FORMAT(Due_Date__c), Done__c, OwnerId from Task__c LIMIT 256')
-		    		.then((response) => { 
-		    			console.log('response===>' + JSON.stringify(response))
-		    			return response.records.map((row) => {
-		    				return {
-		    					id: row.Id,
-		    					title: row.Name,
-		    					createdDate: new Date(row.CreatedDate).getTime(),
-		    					dueDate: new Date(row.Due_Date__c).getTime(),
-		    					done: row.Done__c,
-		    					ownerId: row.OwnerId,
-		    				}
-		    			})
-		    		})
+		    		.then(processTaskSoqlResponse)
 	    	}
 	    },
 
@@ -140,19 +133,8 @@ const makeResolvers = () => {
 	    Person: {
 	        tasks: (person) => {
 	    		console.log(`===> SERVER SOQL: Task__c for ${person.id}`)
-	    		return netQuery(`select Id, Name, FORMAT(CreatedDate), FORMAT(Due_Date__c), Done__c from Task__c where OwnerId = ${person.id}`)
-		    		.then((response) => { 
-		    			return response.records.map((row) => {
-		    				return {
-		    					id: row.Id,
-		    					title: row.Name,
-		    					createdDate: new Date(row.CreatedDate).getTime(),
-		    					dueDate: new Date(row.Due_Date__c).getTime(),
-		    					done: row.Done__c,
-		    					ownerId: person.id,
-		    				}
-		    			})
-		    		})
+	    		return netQuery(`select Id, Name, FORMAT(CreatedDate), FORMAT(Due_Date__c), Done__c, OwnerId from Task__c where OwnerId = ${person.id}`)
+		    		.then(processUserSoqlResponse)
 	        }
 	    },
 
