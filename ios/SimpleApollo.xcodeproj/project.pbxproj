@@ -12,8 +12,6 @@
 		4F16AAE7206F11A300FCD3C9 /* usersyncs.json in Resources */ = {isa = PBXBuildFile; fileRef = 4F16AAE5206F11A300FCD3C9 /* usersyncs.json */; };
 		4F16AAE8206F11A300FCD3C9 /* userstore.json in Resources */ = {isa = PBXBuildFile; fileRef = 4F16AAE6206F11A300FCD3C9 /* userstore.json */; };
 		4F3AFF401DC2C79E006FF6B0 /* InitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F3AFF3E1DC2C79E006FF6B0 /* InitialViewController.m */; };
-		4FD0455D2064A1C000A789A6 /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4FD0455C2064A1BF00A789A6 /* MaterialIcons.ttf */; };
-		4FEC863A2065FF5D004774F6 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4FEC86392065FF5C004774F6 /* FontAwesome.ttf */; };
 		6F00A4EBBB37F8CE9D7F4535 /* libPods-SimpleApollo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 78A9CFAC4F2F0A1FDF2E7669 /* libPods-SimpleApollo.a */; };
 		B7168FBE1FACC7EB00A48DB5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B7168FBD1FACC7EB00A48DB5 /* LaunchScreen.storyboard */; };
 		CEA8CA061F071C3300448B51 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CEA8CA051F071C3300448B51 /* Images.xcassets */; };
@@ -31,8 +29,6 @@
 		4F16AAE6206F11A300FCD3C9 /* userstore.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = userstore.json; path = ../userstore.json; sourceTree = "<group>"; };
 		4F3AFF3D1DC2C79E006FF6B0 /* InitialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InitialViewController.h; path = SimpleApollo/InitialViewController.h; sourceTree = "<group>"; };
 		4F3AFF3E1DC2C79E006FF6B0 /* InitialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = InitialViewController.m; path = SimpleApollo/InitialViewController.m; sourceTree = "<group>"; };
-		4FD0455C2064A1BF00A789A6 /* MaterialIcons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
-		4FEC86392065FF5C004774F6 /* FontAwesome.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = FontAwesome.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf"; sourceTree = "<group>"; };
 		4FF12F8E1DCA93E2004D9EF9 /* SimpleApollo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = SimpleApollo.entitlements; path = SimpleApollo/SimpleApollo.entitlements; sourceTree = "<group>"; };
 		78A9CFAC4F2F0A1FDF2E7669 /* libPods-SimpleApollo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SimpleApollo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE79D28E6E57F5B77FA24716 /* Pods-SimpleApollo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SimpleApollo.release.xcconfig"; path = "Pods/Target Support Files/Pods-SimpleApollo/Pods-SimpleApollo.release.xcconfig"; sourceTree = "<group>"; };
@@ -78,8 +74,6 @@
 			children = (
 				4F16AAE6206F11A300FCD3C9 /* userstore.json */,
 				4F16AAE5206F11A300FCD3C9 /* usersyncs.json */,
-				4FEC86392065FF5C004774F6 /* FontAwesome.ttf */,
-				4FD0455C2064A1BF00A789A6 /* MaterialIcons.ttf */,
 				B7168FBD1FACC7EB00A48DB5 /* LaunchScreen.storyboard */,
 				CEA8CA051F071C3300448B51 /* Images.xcassets */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
@@ -193,10 +187,8 @@
 			files = (
 				CEA8CA061F071C3300448B51 /* Images.xcassets in Resources */,
 				B7168FBE1FACC7EB00A48DB5 /* LaunchScreen.storyboard in Resources */,
-				4FD0455D2064A1C000A789A6 /* MaterialIcons.ttf in Resources */,
 				4F16AAE7206F11A300FCD3C9 /* usersyncs.json in Resources */,
 				4F16AAE8206F11A300FCD3C9 /* userstore.json in Resources */,
-				4FEC863A2065FF5D004774F6 /* FontAwesome.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,8 +234,19 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-SimpleApollo/Pods-SimpleApollo-resources.sh",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Entypo.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Feather.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Foundation.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Octicons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Zocial.ttf",
 				"${PODS_ROOT}/../../mobile_sdk/SalesforceMobileSDK-iOS/shared/resources/SalesforceSDKAssets.xcassets",
-				$PODS_CONFIGURATION_BUILD_DIR/SalesforceSDKCore/SalesforceSDKResources.bundle,
+				"$PODS_CONFIGURATION_BUILD_DIR/SalesforceSDKCore/SalesforceSDKResources.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
