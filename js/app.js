@@ -65,7 +65,7 @@ export class App extends Component {
     return (
       <ApolloProvider client={makeClient(typeDefs, this.state.makeResolvers())}>
         <MenuProvider>
-          <View style={{flex:1}}>
+          <View style={{flex:1, backgroundColor: '#fff'}}>
             <Header
               leftComponent={this.renderResolverMenu()}
               centerComponent={{ text: 'To Do\'s', style: { color: '#fff' } }}

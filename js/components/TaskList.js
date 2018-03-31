@@ -67,7 +67,7 @@ class TaskList extends React.Component {
     return (
       <View style={{flex:1}}>
         {this.renderFilterButtonGroup()}
-        <ScrollView style={{flex:1, marginTop:-22}}>
+        <ScrollView style={{flex:1}}>
           <List>
             {
               [...this.props.data.tasks]

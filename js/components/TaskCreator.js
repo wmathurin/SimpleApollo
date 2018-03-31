@@ -73,7 +73,6 @@ class TaskCreator extends React.Component {
   renderTitleInput() {
     return (
       <Input
-        autoFocus={true}
         placeholder='Title'
         value={this.state.title}
         onChangeText={(text) => this.setState({title: text})}
