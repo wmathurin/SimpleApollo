@@ -26,7 +26,7 @@
 
 import React from 'react'
 import { TouchableOpacity, View } from 'react-native'
-import { Card, Button, Icon, Input, colors } from 'react-native-elements'
+import { Card, Button, Icon, Input, colors, Text } from 'react-native-elements'
 import DatePicker from 'react-native-datepicker'
 import ModalSelector from 'react-native-modal-selector'
 import gql from 'graphql-tag'
