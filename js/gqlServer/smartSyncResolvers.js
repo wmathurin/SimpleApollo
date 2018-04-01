@@ -24,175 +24,112 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
- import {smartstore, smartsync, forceUtil} from 'react-native-force'
- import DataLoader from 'dataloader'
+import {smartstore, smartsync, forceUtil} from 'react-native-force'
+import DataLoader from 'dataloader'
 
- const runSmartQuery = forceUtil.promiser(smartstore.runSmartQuery);
- const upsertSoupEntries = forceUtil.promiser(smartstore.upsertSoupEntries);
- const removeFromSoup = forceUtil.promiser(smartstore.removeFromSoup);
- const retrieveSoupEntries = forceUtil.promiser(smartstore.retrieveSoupEntries);
- 
+runSmartQuery = forceUtil.promiser(smartstore.runSmartQuery);
+reSync = forceUtil.promiser(smartsync.reSync);
+
 //
 // Note: you need to create custom object on server called Task__c with following custom fields
 // - Due_Date__c : DateTime
 // - Done__c: Checkbox
 //
-const uuidv4 = () => {
-	return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-		(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-		)
-}
-
-const promiserNoRejection = (func) => {
-	var retfn = function() {
-		var args = Array.prototype.slice.call(arguments)
-
-		return new Promise(function(resolve, reject) {
-			// then() will be called wether it succeeded or failed
-			const callback = () => {
-				try {
-					resolve.apply(null, arguments)
-				}
-				catch (err) {
-					console.error(err.stack);
-				}
-			}
-			args.push(callback) 
-			args.push(callback)
-			console.debug("-----> Calling " + func.name)
-			func.apply(null, args)
-		});
-	};
-	return retfn;
-}
-
-const reSync = promiserNoRejection(smartsync.reSync);
 
 const makeResolvers = () => {
 
 	const storeConfig = {isGlobalStore: false}
 
+
 	const runSmartSql = (sql) => {
 		return runSmartQuery(storeConfig, 
-		{
-			queryType:'smart', 
-			smartSql: sql,
-			pageSize: 256
-		})		
+							 {
+								queryType:'smart', 
+								smartSql: sql,
+								pageSize: 256
+							})		
 	}
 
 	// Response processors
-	const processUserSmartSqlResult = (result) => { 
-		const x = result.currentPageOrderedEntries.map((row) => {
+	const processUserSmartSqllResult = (result) => { 
+		return result.currentPageOrderedEntries.map((row) => {
 			return {
-				id: row[0].Id,
-				firstName: row[0].FirstName,
-				lastName: row[0].LastName
-			}
+					id: row.Id,
+					firstName: row.FirstName,
+					lastName: row.LastName
+				}
 		})
-		console.log("users====>" + JSON.stringify(x))
-		return x
 	}
 
-	const processTaskSmartSqlResult = (result) => { 
-		const x = result.currentPageOrderedEntries.map((row) => {
+	const processTaskSmartSqllResult = (result) => { 
+		return result.currentPageOrderedEntries.map((row) => {
 			return {
-				id: row[0].Id,
-				title: row[0].Name,
-				createdDate: new Date(row[0].CreatedDate).getTime(),
-				dueDate: new Date(row[0].Due_Date__c).getTime(),
-				done: row[0].Done__c,
-				ownerId: row[0].OwnerId,
+				id: row.Id,
+				title: row.Name,
+				createdDate: new Date(row.CreatedDate).getTime(),
+				dueDate: new Date(row.Due_Date__c).getTime(),
+				done: row.Done__c,
+				ownerId: person.id,
 			}
 		})
-		console.log("tasks====>" + JSON.stringify(x))
-		return x		
 	}
 
 	// Data loader
 	const peopleLoader = new DataLoader((ids) => {
 		const inClause = ids.map((id) => `'${id}'`).join(',')
-		return reSync(storeConfig, 'syncDownUsers')
-		.then(() => runSmartSql(`select {User:_soup} from {User} where {User:Id} in (${inClause})`))
-		.then(processUserSmartSqlResult)
+		console.log(`===> STORE SmartSql: User ${inClause}`)	
+		return runSmartSql(`select {User:Id}, {User:FirstName}, {User:LastName} from {User} where {User:Id} in (${inClause})`)
+		.then(processUserSmartSqllResult)
 	})	
 
 	return {	
-		Query: {
-			people: () => {
-				return reSync(storeConfig, 'syncDownUsers')
-				.then(() => runSmartSql('select {User:_soup} from {User}'))
-				.then(processUserSmartSqlResult)
-				.then((people) => {
-					people.forEach((person) => {
-						peopleLoader.prime(person.id, person)
-					})	    			
-					return people
-				})
-			},
+	    Query: {
+	    	people: () => {
+	    		console.log('===> STORE SmartSql: all User')
+	    		return runSmartSql('select {User:Id}, {User:FirstName}, {User:LastName} from {User} where {User:Id}')
+	    		.then(processUserSmartSqllResult)
+	    		.then((people) => {
+	    			people.forEach((person) => {
+	    				peopleLoader.prime(person.id, person)
+	    			})	    			
+	    			return people
+	    		})
+	    	},
 
-			tasks: () => {
-				return reSync(storeConfig, 'syncDownTasks')
-				.then(() => runSmartSql('select {Task__c:_soup} from {Task__c}'))
-				.then(processTaskSmartSqlResult)
-			}
-		},
+	    	tasks: () => {
+	    		console.log('===> STORE SmartSql: all Task__c')
+				return runSmartSql('select Id, Name, FORMAT(CreatedDate), FORMAT(Due_Date__c), Done__c, OwnerId from Task__c')
+				.then(processTaskSmartSqllResult)
+	    	}
+	    },
 
-		Mutation: {
-			addTask: (_, {input: { title, ownerId, dueDate}}) => {
-				// return upsertSoupEntries(storeConfig, 'Task__c', [{
-				// 	Id:`local_${uuidv4()}`,
-				// 	Name:title, 
-				// 	OwnerId:ownerId, 
-				// 	Due_Date__c:new Date(dueDate).toISOString()
-				// }])
-				// .then((result) => {
-				// 	return {
-				// 		id: result[0].Id,
-				// 		title,
-				// 		dueDate,
-				// 		ownerId,
-				// 		done: false
-				// 	}
-				// })
-			},
-			updateTask: (_, { taskId, done }) => {
-	    		// return runSmartSql(`select {Task__c:_soup} from {Task__c} where {Task__c:Id} = '${taskId}'`)
-	    		// .then(processTaskSmartSqlResult)
-	    		// .then((tasks) => {
-	    		// 	return upsertSoupEntries(storeConfig, 'Task__c', [{
-	    		// 		... tasks[0],
-	    		// 		done: done
-	    		// 	}])
-	    		// })
-		     //    .then(() => {
-		     //    	return {
-		     //    		id: taskId,
-		     //    		done
-		     //    	}
-		     //    })
+	    Mutation: {
+	        addTask: (_, {input: { title, ownerId, dueDate}}) => {
+	    		console.log(`===> STORE CREATE Task__c`)
+	    		// TBD
+	        },
+	        updateTask: (_, { taskId, done }) => {
+	    		console.log(`===> STORE UPDATE: Task__c ${taskId}`)
+	    		// TBD
 	        },
 	        deleteTask: (_, { taskId }) => {
-	        	// return removeFromSoup(storeConfig, 'Task__c', {queryType:'exact', indexPath:'Id', matchKey:taskId, order: 'ascending', pageSize:1})
-	        	// .then(() => {
-	        	// 	return {
-	        	// 		id: taskId
-	        	// 	}
-	        	// })        				        
+	    		console.log(`===> STORE DELETE: Task__c ${taskId}`)
+	    		// TBD
 	        }
 	    },
 
 	    Person: {
-	    	tasks: (person) => {
-	    		return runSmartSql(`select {User:_soup} from {User} where {User:OwnerId} = '${person.id}'`)
-	    		.then(processTaskSmartSqlResult)
-	    	}
+	        tasks: (person) => {
+	    		console.log(`===> STORE SOQL: SmartSql for ${person.id}`)
+				return runSmartSql(`select Id, Name, FORMAT(CreatedDate), FORMAT(Due_Date__c), Done__c from Task__c where OwnerId = ${person.id}`)
+				.then(processTaskSmartSqllResult)
+	        }
 	    },
 
 	    Task: {
-	    	owner: (task) => {
-	    		return peopleLoader.load(task.ownerId)
-	    	}
+	        owner: (task) => {
+	        	return peopleLoader.load(task.ownerId)
+	        }
 	    },    
 	}
 }
