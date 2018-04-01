@@ -1,6 +1,7 @@
 # History of the sample app
 
 We tagged the repo every time we get to a logical stable point. Below is a description of every tag.
+As you switch tag, you might need to run `npm update` (and in some case, `pod update` in the `ios` folder). In some cases, you might need to restart the app (when a dependency required native changes).
 
 ## 1_generated_app
 <details><summary>[expand]</summary>
@@ -32,7 +33,8 @@ For the GraphQL server (SSR support), we used [Apollo Schema Link](https://www.a
 We completely changed the application to give you a list of tasks (todos).
 Each task has an owner and due date and can either be done or not.
 The main screen shows a task list which can be deleted or marked as complete or not.
-There is an add button which brings up a card for creating a new task. It has a date picker (but the owner is always you - Owner picker was added later).
+There is an add button which brings up a card for creating a new task. It has a date picker(using [react native datepicker](https://github.com/xgfe/react-native-datepicker)).
+But the owner is always you - Owner picker was added later.
 
 It is making use of GraphQL for querying and updating, adding and deleting records.
 
@@ -72,7 +74,7 @@ As a result, to render the list, the resolvers now run a SOQL query to get the t
 ## 6_todo_app_owner_picker
 <details><summary>[expand]</summary>
 
-In this step, we added an owner picker in the component used for creating tasks: [TaskCreator](https://github.com/wmathurin/SimpleApollo/blob/6_todo_app_owner_picker/js/components/TaskCreator.js#L83).
+In this step, we added an owner picker (using [react native modal selector](https://github.com/peacechen/react-native-modal-selector)) in the component used for creating tasks: [TaskCreator](https://github.com/wmathurin/SimpleApollo/blob/6_todo_app_owner_picker/js/components/TaskCreator.js#L83).
 
 We had to declare a [new query](https://github.com/wmathurin/SimpleApollo/blob/6_todo_app_owner_picker/js/gqlServer/schema.js#L53) in the schema.
 We had to add a [resolver](https://github.com/wmathurin/SimpleApollo/blob/6_todo_app_owner_picker/js/gqlServer/restAPIResolvers.js#L64) for it.
@@ -87,4 +89,12 @@ Instead of having to change the code to switch "resolvers", we added a [menu](ht
 
 </details>
 
+## 8_todo_app_android_support_pull_to_refresh
+<details><summary>[expand]</summary>
+
+Fixes some bugs.
+Added pull to refresh (using [RefreshControl](https://facebook.github.io/react-native/docs/refreshcontrol.html)) in task list to do a `refetch`.
+Added Android support. There was not much to do. One of the dependency ([vector icons](https://github.com/oblador/react-native-vector-icons)) required a change in the native project (an extra line in the gradle file). Also needed to change the background color behind the list since it isn't white by default on Android.
+
+</details>
 
