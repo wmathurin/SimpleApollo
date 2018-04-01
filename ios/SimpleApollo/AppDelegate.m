@@ -75,10 +75,6 @@ static NSString * const OAuthRedirectURI        = @"testsfdc:///mobilesdk/detect
             //
 
             [SFSDKLogger log:[weakSelf class] level:DDLogLevelInfo format:@"Post-launch: launch actions taken: %@", [SalesforceSDKManager launchActionsStringRepresentation:launchActionList]];
-          
-            [((SmartSyncSDKManager*)[SalesforceSDKManager sharedManager]) setupUserStoreFromDefaultConfig];
-            [((SmartSyncSDKManager*)[SalesforceSDKManager sharedManager]) setupUserSyncsFromDefaultConfig];
-
             [weakSelf setupRootViewController];
         };
         [SalesforceSDKManager sharedManager].launchErrorAction = ^(NSError *error, SFSDKLaunchAction launchActionList) {
