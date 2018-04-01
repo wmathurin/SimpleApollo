@@ -35,10 +35,8 @@ import TaskCreator from './components/TaskCreator'
 
 import { typeDefs } from './gqlServer/schema'
 import { makeClient } from './gql/client'
-
 import makeMockResolvers from './gqlServer/mockResolvers'
 import makeRestAPIResolvers from './gqlServer/restAPIResolvers'
-import makeSmartSyncResolvers from './gqlServer/smartSyncResolvers'
 
 export class App extends Component {
   constructor(...args) {
@@ -56,7 +54,6 @@ export class App extends Component {
             <MenuOptions>
               <MenuOption value={makeMockResolvers} text='Use Mock Resolvers' />
               <MenuOption value={makeRestAPIResolvers} text='Use Rest API Resolvers' />
-              <MenuOption value={makeSmartSyncResolvers} text='Use SmartSync Resolvers' />
             </MenuOptions>
           </Menu>)
   }
