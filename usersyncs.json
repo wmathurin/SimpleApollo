@@ -14,7 +14,6 @@
       "target": {"type":"soql", "query":"select Id, FirstName, LastName from User"},
       "options": {"mergeMode":"OVERWRITE"}
     },
-    ,
     {
       "syncName": "syncUpTasks",
       "syncType": "syncUp",
