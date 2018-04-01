@@ -1,7 +1,6 @@
 # SimpleApollo
 Simple application using Mobile SDK + React Native + Apollo GraphQL (client and server)
-- See [OVERVIEW](https://github.com/wmathurin/SimpleApollo/blob/dev/OVERVIEW.md) for an overview of the motivations and goals for developing this application
-- See [STEPS](https://github.com/wmathurin/SimpleApollo/blob/dev/STEPS.md) for a history of the development of the application
+See [OVERVIEW](https://github.com/wmathurin/SimpleApollo/blob/dev/OVERVIEW.md) for an overview of the motivations and goals for developing this application.
 
 ## To get started do the following from the root directory
 ``` shell

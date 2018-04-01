@@ -93,9 +93,10 @@ To establish feasibility of the above approach and determine work needed in supp
 2. (Steel Thread 2) 1 but with fields sets known at run time (layout driven)
 3. (Steel Thread 3) 1 but working offline also
 
-Out of scope:
-- When both object types and field sets are known at run time (generic object browser)
-- Abstracting styles away from UI components (to be able to swap 'design')
+Not in scope:
+- When both object types and field sets are known at run time (generic object browser),
+- Run time meta data (2) and offline,
+- Abstracting styles away from UI components (to be able to swap 'design').
 
 ### Application
 
@@ -125,7 +126,7 @@ The add screen should:
 
 This application allows us to exercise the following GraphQL features:
 - queries (including refetch),
-- mutations that modify record in place (the status change),
+- mutations that modify a record in place (the status change),
 - mutations that create or delete records (and the cache beyond the record).
 
 This application does NOT exercise the following GraphQL features:
@@ -134,7 +135,7 @@ This application does NOT exercise the following GraphQL features:
 
 </details>
 
-## Steel Thread 1: Online with static meta-data
+## Steel Thread 1: Online with static meta data
 
 <details><summary>[expand]</summary>
 
