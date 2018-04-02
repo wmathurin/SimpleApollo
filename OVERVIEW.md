@@ -170,7 +170,7 @@ Key components:
 - [component for creating a new to do](https://github.com/wmathurin/SimpleApollo/blob/8_todo_app_android_support_pull_to_refresh/js/components/TaskCreator.js),
 - [component for changing status](https://github.com/wmathurin/SimpleApollo/blob/8_todo_app_android_support_pull_to_refresh/js/components/TaskToggler.js).
 
-One important thing to understand is [Apollo caching](https://www.apollographql.com/docs/react/advanced/caching.html). For updates (like changing the status of a to do), there is nothing special to do in the app code. However when adding/deleting records, the cache needs to be updated or invalidated by the app otherwise lists will not show the added/deleted rectod. For more information, see th [Apollo doc](https://www.apollographql.com/docs/react/advanced/caching.html#after-mutations). 
+One important thing to understand is [Apollo caching](https://www.apollographql.com/docs/react/advanced/caching.html). For updates (like changing the status of a to do), there is nothing special to do in the app code. However when adding/deleting records, the cache needs to be updated or invalidated by the app otherwise lists will not show the added/deleted rectod. For more information, see the [Apollo doc](https://www.apollographql.com/docs/react/advanced/caching.html#after-mutations). 
 
 In the sample app: 
 - the cache changes on add are done [here](https://github.com/wmathurin/SimpleApollo/blob/8_todo_app_android_support_pull_to_refresh/js/components/TaskCreator.js#L64),
