@@ -35,9 +35,7 @@ fragment personFragment on Person {
 
 export const taskFragment = gql`
 fragment taskFragment on Task {
-    title
-    dueDate
-    done
+    fields
     owner {
         id
         ... personFragment

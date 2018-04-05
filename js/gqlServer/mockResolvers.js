@@ -25,6 +25,7 @@
  */
 
 import { find, findIndex, filter } from 'lodash'
+import GraphQLJSON from 'graphql-type-json'
 
 const makeResolvers = () => {
 
@@ -35,27 +36,29 @@ const makeResolvers = () => {
     var me = { id:`${seq++}`, firstName:'Wolfgang', lastName:'Mathurin' }
     var allPeople = [ me ]
     var allTasks = [ 
-        { id:`${seq++}`, title:'Get milk', ownerId: me.id, createdDate:now, dueDate:due, done:false },
-        { id:`${seq++}`, title:'Clean car', ownerId: me.id, createdDate:now, dueDate:due, done:false }, 
+        { id:`${seq++}`, ownerId: me.id, fields: { title:'Get milk',  createdDate:now, dueDate:due, done:false } },
+        { id:`${seq++}`, ownerId: me.id, fields: { title:'Clean car', createdDate:now, dueDate:due, done:false } }, 
     ]
 
     return {
+        JSON: GraphQLJSON,
+
         Query: {
             people: () => allPeople,
             tasks: () => allTasks,
         },
         Mutation: {
-            addTask: (_, {input: { title, ownerId, dueDate}}) => {
-                const newTask = { id:`${seq++}`, title: title, ownerId: ownerId, createdDate:(new Date()).getTime(), dueDate: dueDate, done:false }
+            addTask: (_, {input: { ownerId, fields}}) => {
+                const newTask = { id:`${seq++}`, ownerId: ownerId, fields: { ...fields, createdDate:(new Date()).getTime() } }
                 allTasks.push(newTask)
                 return newTask
             },
-            updateTask: (_, { taskId, done }) => {
+            updateTask: (_, { taskId, fields }) => {
                 const task = find(allTasks, {id: taskId })
                 if (!task) {
                     throw new Error(`Couldn't find task with id ${task.id}`)
                 }
-                task.done = done
+                task.fields = { ...task.fields, ...fields}
                 return task
             },
             deleteTask: (_, { taskId }) => {

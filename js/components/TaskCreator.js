@@ -54,12 +54,13 @@ class TaskCreator extends React.Component {
   }
 
   addTask() {
-    const title = this.state.title
     const ownerId = this.state.whoId
+    const title = this.state.title
     const dueDate = new Date(this.state.when).getTime()
+    const fields = { title, dueDate }
 
     this.props.addTask({
-      variables: { input: { title, ownerId, dueDate } },
+      variables: { input: { ownerId, fields } },
       update: (store, { data: { addTask: newTask } }) => {
         const data = store.readQuery({ query: taskListQuery });
         data.tasks.push(newTask)
@@ -91,7 +92,6 @@ class TaskCreator extends React.Component {
       <ModalSelector
         data={pickerData}
         onChange={(option) => {
-          console.log("option===>" + JSON.stringify(option))
           this.setState({whoId: option.key, whoName: option.label})
         }}
       >

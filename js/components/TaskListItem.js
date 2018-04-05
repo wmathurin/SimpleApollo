@@ -51,10 +51,10 @@ class TaskListItem extends React.Component {
     const task = this.props.task
 
     const subtitle = `who: ${task.owner.firstName} ${task.owner.lastName}\n`
-      + `when: ${new Date(task.dueDate).toLocaleString()}`
+      + `when: ${new Date(task.fields.dueDate).toLocaleString()}`
 
     return (<ListItem
-              title={task.title}
+              title={task.fields.title}
               subtitle={subtitle}
               subtitleNumberOfLines={2}
               leftIcon={<Icon raised name='delete' color='grey' size={18} onPress={() => this.deleteTask()}/>}

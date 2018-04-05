@@ -33,9 +33,10 @@ class TaskToggler extends React.Component {
 
   toggleTask() {
     const taskId = this.props.task.id
-    const done = !this.props.task.done
+    const done = !this.props.task.fields.done
+    const fields = { done }
 
-    this.props.updateTask({variables: {taskId, done}})
+    this.props.updateTask({variables: {taskId, fields}})
   }
 
   render() {
@@ -43,7 +44,7 @@ class TaskToggler extends React.Component {
     return (
       <CheckBox
         iconRight
-        checked={task.done}
+        checked={task.fields.done}
         onPress={() => this.toggleTask()}
       />
     )
@@ -52,10 +53,10 @@ class TaskToggler extends React.Component {
 
 
 const updateTaskMutation = gql`
-  mutation updateTask($taskId: String!, $done: Boolean!) {
-    updateTask(taskId: $taskId, done: $done) {
+  mutation updateTask($taskId: String!, $fields: JSON!) {
+    updateTask(taskId: $taskId, fields: $fields) {
       id
-      done
+      fields
     }
   }
 `

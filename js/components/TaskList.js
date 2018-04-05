@@ -84,8 +84,8 @@ class TaskList extends React.Component {
           <List>
             {
               [...this.props.data.tasks]
-              .filter((task) => this.state.filter == null ? true : task.done == this.state.filter)
-              .sort((x, y) => y.dueDate < x.dueDate)
+              .filter((task) => this.state.filter == null ? true : task.fields.done == this.state.filter)
+              .sort((x, y) => y.fields.dueDate < x.fields.dueDate)
               .map(task => (<TaskListItem key={task.id} task={task} />))
             }
           </List>

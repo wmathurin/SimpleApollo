@@ -25,6 +25,8 @@
  */
 
 export const typeDefs = `
+scalar JSON
+
 type Person {
     id: String!
     firstName: String
@@ -34,17 +36,13 @@ type Person {
 
 type Task {
     id: String!
-    title: String!
     owner: Person!
-    createdDate: Float!
-    dueDate: Float!
-    done: Boolean!
+    fields: JSON
 }
 
 input TaskInput {
-    title: String!
+    fields: JSON
     ownerId: String!
-    dueDate: Float!
 }
 
 # the schema allows the following query:
@@ -64,7 +62,7 @@ type Mutation {
 
     updateTask (
     taskId: String
-    done: Boolean
+    fields: JSON
     ) : Task
 
     deleteTask (
