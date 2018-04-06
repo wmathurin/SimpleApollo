@@ -53,23 +53,3 @@ query taskListQuery {
 }
 ${taskFragment}
 `
-
-
-export const peopleQuery = gql`
-query peopleQuery {
-    people {
-        id
-        ... personFragment
-    }
-}
-${personFragment}
-`
-export const taskFieldSpecs = gql`
-query taskFieldSpecsQuery ($mode: String!) {
-    taskFieldSpecs(mode: $mode) {
-        name
-        type
-        label
-    }
-}
-`

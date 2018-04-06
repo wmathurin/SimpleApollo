@@ -32,7 +32,7 @@ import ModalSelector from 'react-native-modal-selector'
 import gql from 'graphql-tag'
 import { compose, graphql } from 'react-apollo'
 
-import { taskListQuery, taskFragment, currentUserQuery, peopleQuery } from '../gql/queries'
+import { personFragment, taskFragment, taskListQuery } from '../gql/queries'
 
 const nameFromPerson = (person) => (person.fields.firstName == '' ? '' : person.fields.firstName + ' ') + person.fields.lastName
 
@@ -45,19 +45,15 @@ class TaskCreator extends React.Component {
   initialState() {
     return {
       isAdding: false, 
-      title: '', 
-      when: '',
+      fields: {},
       whoId: '',
       whoName: '',
-      isDateTimePickerVisible: false
     }
   }
 
   addTask() {
     const ownerId = this.state.whoId
-    const title = this.state.title
-    const dueDate = new Date(this.state.when).getTime()
-    const fieldInputs = { title, dueDate }
+    const fieldInputs = this.state.fields
 
     this.props.addTask({
       variables: { ownerId, fieldInputs },
@@ -69,15 +65,6 @@ class TaskCreator extends React.Component {
     })
 
     this.setState(this.initialState())
-  }
-
-  renderTitleInput() {
-    return (
-      <Input
-        placeholder='Title'
-        value={this.state.title}
-        onChangeText={(text) => this.setState({title: text})}
-      />)
   }
 
   renderOwnerPicker() {
@@ -96,41 +83,11 @@ class TaskCreator extends React.Component {
         }}
       >
         <Input
-          placeholder='Who'
+          placeholder='Owner'
           value={this.state.whoName}
           editable={false}
         />
       </ModalSelector>)
-  }
-
-  renderDatePicker() {
-    return (
-      <View style={{flexDirection:'row'}}>
-        <TouchableOpacity onPress={() => this.refs.datePicker.onPressDate()}>
-          <Input
-            pointerEvents='none'
-            placeholder='When'
-            value={this.state.when}
-            editable={false}
-            />
-        </TouchableOpacity>
-        <DatePicker
-          ref='datePicker'
-          value={this.state.when}
-          style={{width:32}}
-          date={this.state.when}
-          mode='datetime'
-          placeholder='When'
-          format='MM/DD/YYYY, h:mm:ss a'
-          confirmBtnText='Confirm'
-          cancelBtnText='Cancel'
-          customStyles={ {btnTextConfirm: {color: colors.primary} } }
-          showIcon={true}
-          hideText={true}
-          iconComponent={<Icon color='grey' name='calendar' type='font-awesome'/>}
-          onDateChange={(date) => {this.setState({when: date})}}
-        />
-      </View>)
   }
 
   renderButtons() {
@@ -150,10 +107,57 @@ class TaskCreator extends React.Component {
       </View>)
   }
 
+  onChangeField(fieldName, newValue) {
+    const newFields = {...this.state.fields}
+    newFields[fieldName] = newValue
+    this.setState({fields: newFields})
+  }
+
+  renderField(fieldSpec) {
+    switch(fieldSpec.type) {
+      case 'STRING':
+        return (
+                <Input key={fieldSpec.name}
+                  placeholder={fieldSpec.label}
+                  value={this.state.fields[fieldSpec.name]}
+                  onChangeText={(text) => this.onChangeField(fieldSpec.name, text)}
+                />)          
+      case 'DATETIME':
+        const currentDateValue = new Date(this.state.fields[fieldSpec.name])
+        return (
+                <View style={{flexDirection:'row'}} key={fieldSpec.name}> 
+                  <TouchableOpacity onPress={() => this.refs[`datePicker_${fieldSpec.name}`].onPressDate()}>
+                    <Input
+                      pointerEvents='none'
+                      placeholder={fieldSpec.label}
+                      value={isNaN(currentDateValue.getTime()) ? '' : currentDateValue.toLocaleString()}
+                      editable={false}
+                      />
+                  </TouchableOpacity>
+                  <DatePicker
+                    ref={`datePicker_${fieldSpec.name}`}
+                    date={currentDateValue}
+                    style={{width:32}}
+                    mode='datetime'
+                    format='MM/DD/YYYY, h:mm:ss a'
+                    confirmBtnText='Confirm'
+                    cancelBtnText='Cancel'
+                    customStyles={ {btnTextConfirm: {color: colors.primary} } }
+                    showIcon={true}
+                    hideText={true}
+                    iconComponent={<Icon color='grey' name='calendar' type='font-awesome'/>}
+                    onDateChange={(date) => this.onChangeField(fieldSpec.name, new Date(date).getTime())}
+                  />
+                </View>)
+    }
+  }
+
   render () {
     if (this.props.data.loading) {
       return (<Text style={{flex:1, textAlign:'center'}}>Loading</Text>);
     }
+
+    console.log("data===>" + JSON.stringify(this.props.data))
 
     if (!this.state.isAdding) {
       return (
@@ -168,9 +172,8 @@ class TaskCreator extends React.Component {
     else {
       return (
         <Card title='Add To Do' containerStyle={{marginBottom:16}}>
-          {this.renderTitleInput()}
+          {this.props.data.taskFieldSpecs.map((fieldSpec) => this.renderField(fieldSpec))}
           {this.renderOwnerPicker()}
-          {this.renderDatePicker()}
           {this.renderButtons()}
         </Card>)
     }
@@ -183,12 +186,27 @@ const addTaskMutation = gql`
       id
       ... taskFragment
     }
-}
+  }
 ${taskFragment}
 `
 
+const addTaskQuery = gql`
+  query addTaskQuery($mode: String!) {
+    people {
+      id
+      ... personFragment
+    }
+    taskFieldSpecs (mode: $mode) {
+      name
+      type 
+      label
+    }
+  }
+${personFragment}
+`
+
 const TaskCreatorWithData = compose(
-  graphql(peopleQuery),
+  graphql(addTaskQuery, {options: { variables: { mode: 'CREATE'}}}),
   graphql(addTaskMutation, {name : 'addTask'})
   )(TaskCreator)
 

@@ -53,15 +53,6 @@ const makeResolvers = () => {
         { id:`${seq++}`, name:'lastName', type: 'STRING', label: 'Last Name'},
     ]
 
-    const taskFieldSpecs = (mode) => {
-        switch (mode) {
-            case 'CREATE': return allTaskFieldSpecs.filter((spec) => ['title', 'dueDate'].includes(spec.name))
-            case 'UPDATE': return allTaskFieldSpecs.filter((spec) => ['title', 'dueDate', 'done'].includes(spec.name))
-            case 'LIST': return allTaskFieldSpecs.filter((spec) => ['title', 'dueDate', 'done'].includes(spec.name))            
-            case 'ALL': return allTaskFieldSpecs
-        }
-    }
-
     return {
         JSON: GraphQLJSON,
 
@@ -71,10 +62,16 @@ const makeResolvers = () => {
 
             tasks: () => allTasks,
 
-            peopleFieldSpecs: (mode) => personFieldSpecs,
+            peopleFieldSpecs: (_, { mode }) => allPersonFieldSpecs,
 
-            taskFieldSpecs: (mode) => taskFieldSpecs,
-
+            taskFieldSpecs: (_, { mode }) => {
+                switch (mode) {
+                    case 'CREATE': return allTaskFieldSpecs.filter((spec) => ['title', 'dueDate'].includes(spec.name))
+                    case 'UPDATE': return allTaskFieldSpecs.filter((spec) => ['title', 'dueDate', 'done'].includes(spec.name))
+                    case 'LIST': return allTaskFieldSpecs.filter((spec) => ['title', 'dueDate', 'done'].includes(spec.name))            
+                    case 'ALL': return allTaskFieldSpecs
+                }
+            }
         },
 
         Mutation: {
