@@ -25,23 +25,18 @@
  */
 
 import React from 'react'
-import { find } from 'lodash'
 import { CheckBox } from 'react-native-elements'
 import gql from 'graphql-tag'
 import { graphql } from 'react-apollo'
 
 class TaskToggler extends React.Component {
 
-  getFieldByName (task, fieldName) {
-    return find(task.fields, { spec: { name: fieldName}}).value
-  }
-
   toggleTask() {
     const taskId = this.props.task.id
-    const done = !this.getFieldByName(this.props.task, 'done')
-    const fields = { done }
+    const done = !this.props.task.fields.done
+    const fieldInputs = { done }
 
-    this.props.updateTask({variables: {taskId, fields}})
+    this.props.updateTask({variables: {taskId, fieldInputs}})
   }
 
   render() {
@@ -49,7 +44,7 @@ class TaskToggler extends React.Component {
     return (
       <CheckBox
         iconRight
-        checked={this.getFieldByName(this.props.task, 'done')}
+        checked={task.fields.done}
         onPress={() => this.toggleTask()}
       />
     )
@@ -58,15 +53,10 @@ class TaskToggler extends React.Component {
 
 
 const updateTaskMutation = gql`
-  mutation updateTask($taskId: String!, $fields: FieldInput!) {
-    updateTask(taskId: $taskId, fields: $fields) {
+  mutation updateTask($taskId: String!, $fieldInputs: JSON!) {
+    updateTask(taskId: $taskId, fieldInputs: $fieldInputs) {
       id
-      fields {
-        spec {
-          name
-        }
-        value
-      }
+      fields
     }
   }
 `

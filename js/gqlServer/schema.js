@@ -49,31 +49,20 @@ type FieldSpec {
     label: String!
 }
 
-type Field {
-    id: String!
-    spec: FieldSpec!
-    value: JSON 
-}
-
-input FieldInput {
-    name: String!
-    value: JSON 
-}
-
 interface SObject {
     id: String!
-    fields: [Field]
+    fields: JSON!
 }
 
 type Task implements SObject {
     id: String!
-    fields: [Field]
+    fields: JSON!
     owner: Person!
 }
 
 type Person implements SObject {
     id: String!
-    fields: [Field]
+    fields: JSON!
 }
 
 # the schema allows the following query:
@@ -83,14 +72,14 @@ type Query {
     tasks: [Task]
     peopleFieldSpecs (mode: String!): [FieldSpec]
     taskFieldSpecs (mode: String!): [FieldSpec]
-    
+
 }
 
 # the schema allows the following mutation:
 type Mutation {
 
-    addTask (ownerId: String!, fieldInputs: [FieldInput]!): Task
-    updateTask (taskId: String!, fieldInputs: [FieldInput]!): Task
+    addTask (ownerId: String!, fieldInputs: JSON!): Task
+    updateTask (taskId: String!, fieldInputs: JSON!): Task
     deleteTask (taskId: String!): Task
 
 }

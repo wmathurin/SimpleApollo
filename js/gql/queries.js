@@ -28,23 +28,13 @@
 
 export const personFragment = gql`
 fragment personFragment on Person {
-    fields {
-        spec {
-            name
-        }
-        value
-    }
+    fields 
 }
 `
 
 export const taskFragment = gql`
 fragment taskFragment on Task {
-    fields {
-        spec {
-            name
-        }
-        value
-    }
+    fields
     owner {
         id
         ... personFragment

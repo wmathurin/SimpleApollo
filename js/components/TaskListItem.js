@@ -47,22 +47,14 @@ class TaskListItem extends React.Component {
     })
   }
 
-  fieldsToMap (fields) {
-    var result = {}
-    fields.forEach(({spec: {name}, value}) => result[name] = value)
-    return result
-  }
-
   render () {
     const task = this.props.task
-    var taskFields = this.fieldsToMap(task.fields)
-    var ownerFields = this.fieldsToMap(task.owner.fields)
 
-    const subtitle = `who: ${ownerFields.firstName} ${ownerFields.lastName}\n`
-      + `when: ${new Date(taskFields.dueDate).toLocaleString()}`
+    const subtitle = `who: ${task.owner.fields.firstName} ${task.owner.fields.lastName}\n`
+      + `when: ${new Date(task.fields.dueDate).toLocaleString()}`
 
     return (<ListItem
-              title={taskFields.title}
+              title={task.fields.title}
               subtitle={subtitle}
               subtitleNumberOfLines={2}
               leftIcon={<Icon raised name='delete' color='grey' size={18} onPress={() => this.deleteTask()}/>}

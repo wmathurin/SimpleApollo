@@ -34,7 +34,7 @@ import { compose, graphql } from 'react-apollo'
 
 import { taskListQuery, taskFragment, currentUserQuery, peopleQuery } from '../gql/queries'
 
-const nameFromPerson = (person) => (person.firstName == '' ? '' : person.firstName + ' ') + person.lastName
+const nameFromPerson = (person) => (person.fields.firstName == '' ? '' : person.fields.firstName + ' ') + person.fields.lastName
 
 class TaskCreator extends React.Component {
   constructor(...args) {
@@ -57,10 +57,10 @@ class TaskCreator extends React.Component {
     const ownerId = this.state.whoId
     const title = this.state.title
     const dueDate = new Date(this.state.when).getTime()
-    const fields = { title, dueDate }
+    const fieldInputs = { title, dueDate }
 
     this.props.addTask({
-      variables: { input: { ownerId, fields } },
+      variables: { ownerId, fieldInputs },
       update: (store, { data: { addTask: newTask } }) => {
         const data = store.readQuery({ query: taskListQuery });
         data.tasks.push(newTask)
@@ -178,8 +178,8 @@ class TaskCreator extends React.Component {
 }
 
 const addTaskMutation = gql`
-  mutation addTask($input: TaskInput) {
-    addTask(input: $input) {
+  mutation addTask($ownerId: String!, $fieldInputs: JSON!) {
+    addTask(ownerId: $ownerId, fieldInputs: $fieldInputs) {
       id
       ... taskFragment
     }

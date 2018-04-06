@@ -33,13 +33,14 @@ const makeResolvers = () => {
     var seq = 1
     const now = (new Date()).getTime()
     const due = now + 3600*8*1000
-    var me = { id:`${seq++}`, firstName:'Wolfgang', lastName:'Mathurin' }
+    var me = { id:`${seq++}`, fields: { firstName:'Wolfgang', lastName:'Mathurin' } }
     var allPeople = [ me ]
     var allTasks = [ 
-        { id:`${seq++}`, ownerId: me.id, title:'Get milk',  createdDate:now, dueDate:due, done:false },
-        { id:`${seq++}`, ownerId: me.id, title:'Clean car', createdDate:now, dueDate:due, done:false }, 
+        { id:`${seq++}`, ownerId: me.id, fields: { title:'Get milk',  createdDate:now, dueDate:due, done:false } },
+        { id:`${seq++}`, ownerId: me.id, fields: { title:'Clean car', createdDate:now, dueDate:due, done:false } }, 
     ]
 
+    // Mock meta-data
     const allTaskFieldSpecs = [
         { id:`${seq++}`, name:'title', type: 'STRING', label: 'Title'},
         { id:`${seq++}`, name:'createdDate', type: 'DATETIME', label: 'Created Date'},
@@ -61,43 +62,14 @@ const makeResolvers = () => {
         }
     }
 
-    const preparePerson = (person) => {
-        return {
-            id: person.id,
-            fields: allPersonFieldSpecs
-            .map((spec) => {
-                return {
-                    id: `${person.id}|${spec.name}`,
-                    spec: spec,
-                    value: person[spec.name]
-                }
-            })
-        }
-    }
-
-    const prepareTask = (task) => {
-        return {
-            id: task.id,
-            ownerId: task.ownerId,
-            fields: taskFieldSpecs('ALL')
-            .map((spec) => {
-                return {
-                    id: `${task.id}|${spec.name}`,
-                    spec: spec,
-                    value: task[spec.name]
-                }
-            })
-        }
-    }
-
     return {
         JSON: GraphQLJSON,
 
         Query: {
 
-            people: () => allPeople.map(preparePerson),
+            people: () => allPeople,
 
-            tasks: () => allTasks.map(prepareTask),
+            tasks: () => allTasks,
 
             peopleFieldSpecs: (mode) => personFieldSpecs,
 
@@ -107,35 +79,32 @@ const makeResolvers = () => {
 
         Mutation: {
 
-            addTask: (_, { ownerId, dataInput }) => {
-                const newTask = { id:`${seq++}`, title: title, ownerId: ownerId, createdDate:(new Date()).getTime(), dueDate: dueDate, done:false }
+            addTask: (_, { ownerId, fieldInputs }) => {            
+                const newTask = { id:`${seq++}`, ownerId: ownerId, fields: { ...fieldInputs, createdDate:(new Date()).getTime() } }
                 allTasks.push(newTask)
-                return prepareTask(newTask)
+                console.log("new task" + JSON.stringify(newTask))
+                return newTask
             },
-
             updateTask: (_, { taskId, fieldInputs }) => {
                 const task = find(allTasks, {id: taskId })
                 if (!task) {
                     throw new Error(`Couldn't find task with id ${task.id}`)
                 }
-                fieldInputs.map((fieldInput) => {
-                    task[fieldInput.name] = fieldInput.value
-                })                    
-                return prepareTask(task)
+                task.fields = { ...task.fields, ...fieldInputs}
+                return task
             },
-
             deleteTask: (_, { taskId }) => {
                 const task = find(allTasks, {id: taskId })
                 if (!task) {
                     throw new Error(`Couldn't find task with id ${task.id}`)
                 }
                 allTasks = allTasks.filter((task) => task.id != taskId)
-                return prepareTask(task)
+                return task
             }
         },
 
         Task: {
-            owner: (task) => preparePerson(find(allPeople, { id: task.ownerId })),
+            owner: (task) => find(allPeople, { id: task.ownerId }),
         },
     }
 }
