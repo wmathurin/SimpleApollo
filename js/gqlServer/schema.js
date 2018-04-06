@@ -27,48 +27,73 @@
 export const typeDefs = `
 scalar JSON
 
-type Person {
-    id: String!
-    firstName: String
-    lastName: String!
-    tasks: [Task]
+enum ModeType {
+    CREATE
+    UPDATE
+    VIEW
+    LIST
+    ALL
 }
 
-type Task {
+enum FieldType {
+    STRING
+    NUMBER
+    DATETIME
+    CHECKBOX
+}
+
+type FieldSpec {
     id: String!
+    name: String!
+    type: FieldType
+    label: String!
+}
+
+type Field {
+    id: String!
+    spec: FieldSpec!
+    value: JSON 
+}
+
+input FieldInput {
+    name: String!
+    value: JSON 
+}
+
+interface SObject {
+    id: String!
+    fields: [Field]
+}
+
+type Task implements SObject {
+    id: String!
+    fields: [Field]
     owner: Person!
-    fields: JSON
 }
 
-input TaskInput {
-    fields: JSON
-    ownerId: String!
+type Person implements SObject {
+    id: String!
+    fields: [Field]
 }
 
 # the schema allows the following query:
 type Query {
 
-    people: [Person]
-    
+    people: [Person]    
     tasks: [Task]
+    peopleFieldSpecs (mode: String!): [FieldSpec]
+    taskFieldSpecs (mode: String!): [FieldSpec]
+    
 }
 
-# this schema allows the following mutation:
+# the schema allows the following mutation:
 type Mutation {
 
-    addTask (
-    input: TaskInput       
-    ) : Task
-
-    updateTask (
-    taskId: String
-    fields: JSON
-    ) : Task
-
-    deleteTask (
-    taskId: String
-    ) : Task
+    addTask (ownerId: String!, fieldInputs: [FieldInput]!): Task
+    updateTask (taskId: String!, fieldInputs: [FieldInput]!): Task
+    deleteTask (taskId: String!): Task
 
 }
+
 `;
 

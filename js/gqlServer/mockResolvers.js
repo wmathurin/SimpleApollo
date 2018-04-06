@@ -36,45 +36,106 @@ const makeResolvers = () => {
     var me = { id:`${seq++}`, firstName:'Wolfgang', lastName:'Mathurin' }
     var allPeople = [ me ]
     var allTasks = [ 
-        { id:`${seq++}`, ownerId: me.id, fields: { title:'Get milk',  createdDate:now, dueDate:due, done:false } },
-        { id:`${seq++}`, ownerId: me.id, fields: { title:'Clean car', createdDate:now, dueDate:due, done:false } }, 
+        { id:`${seq++}`, ownerId: me.id, title:'Get milk',  createdDate:now, dueDate:due, done:false },
+        { id:`${seq++}`, ownerId: me.id, title:'Clean car', createdDate:now, dueDate:due, done:false }, 
     ]
+
+    const allTaskFieldSpecs = [
+        { id:`${seq++}`, name:'title', type: 'STRING', label: 'Title'},
+        { id:`${seq++}`, name:'createdDate', type: 'DATETIME', label: 'Created Date'},
+        { id:`${seq++}`, name:'dueDate', type: 'DATETIME', label: 'Due Date'},
+        { id:`${seq++}`, name:'done', type: 'CHECKBOX', label: 'Status'},
+    ]
+
+    const allPersonFieldSpecs = [
+        { id:`${seq++}`, name:'firstName', type: 'STRING', label: 'First Name'},
+        { id:`${seq++}`, name:'lastName', type: 'STRING', label: 'Last Name'},
+    ]
+
+    const taskFieldSpecs = (mode) => {
+        switch (mode) {
+            case 'CREATE': return allTaskFieldSpecs.filter((spec) => ['title', 'dueDate'].includes(spec.name))
+            case 'UPDATE': return allTaskFieldSpecs.filter((spec) => ['title', 'dueDate', 'done'].includes(spec.name))
+            case 'LIST': return allTaskFieldSpecs.filter((spec) => ['title', 'dueDate', 'done'].includes(spec.name))            
+            case 'ALL': return allTaskFieldSpecs
+        }
+    }
+
+    const preparePerson = (person) => {
+        return {
+            id: person.id,
+            fields: allPersonFieldSpecs
+            .map((spec) => {
+                return {
+                    id: `${person.id}|${spec.name}`,
+                    spec: spec,
+                    value: person[spec.name]
+                }
+            })
+        }
+    }
+
+    const prepareTask = (task) => {
+        return {
+            id: task.id,
+            ownerId: task.ownerId,
+            fields: taskFieldSpecs('ALL')
+            .map((spec) => {
+                return {
+                    id: `${task.id}|${spec.name}`,
+                    spec: spec,
+                    value: task[spec.name]
+                }
+            })
+        }
+    }
 
     return {
         JSON: GraphQLJSON,
 
         Query: {
-            people: () => allPeople,
-            tasks: () => allTasks,
+
+            people: () => allPeople.map(preparePerson),
+
+            tasks: () => allTasks.map(prepareTask),
+
+            peopleFieldSpecs: (mode) => personFieldSpecs,
+
+            taskFieldSpecs: (mode) => taskFieldSpecs,
+
         },
+
         Mutation: {
-            addTask: (_, {input: { ownerId, fields}}) => {
-                const newTask = { id:`${seq++}`, ownerId: ownerId, fields: { ...fields, createdDate:(new Date()).getTime() } }
+
+            addTask: (_, { ownerId, dataInput }) => {
+                const newTask = { id:`${seq++}`, title: title, ownerId: ownerId, createdDate:(new Date()).getTime(), dueDate: dueDate, done:false }
                 allTasks.push(newTask)
-                return newTask
+                return prepareTask(newTask)
             },
-            updateTask: (_, { taskId, fields }) => {
+
+            updateTask: (_, { taskId, fieldInputs }) => {
                 const task = find(allTasks, {id: taskId })
                 if (!task) {
                     throw new Error(`Couldn't find task with id ${task.id}`)
                 }
-                task.fields = { ...task.fields, ...fields}
-                return task
+                fieldInputs.map((fieldInput) => {
+                    task[fieldInput.name] = fieldInput.value
+                })                    
+                return prepareTask(task)
             },
+
             deleteTask: (_, { taskId }) => {
                 const task = find(allTasks, {id: taskId })
                 if (!task) {
                     throw new Error(`Couldn't find task with id ${task.id}`)
                 }
                 allTasks = allTasks.filter((task) => task.id != taskId)
-                return task
+                return prepareTask(task)
             }
         },
-        Person: {
-            tasks: (person) => filter(allTasks, { ownerId: person.id }),
-        },
+
         Task: {
-            owner: (task) => find(allPeople, { id: task.ownerId }),
+            owner: (task) => preparePerson(find(allPeople, { id: task.ownerId })),
         },
     }
 }

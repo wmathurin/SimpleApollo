@@ -25,6 +25,7 @@
  */
 
 import React from 'react'
+import { find } from 'lodash'
 import { Text, List, ListItem, ButtonGroup } from 'react-native-elements'
 import { View, ScrollView, RefreshControl } from 'react-native'
 import { graphql } from 'react-apollo'
@@ -65,6 +66,11 @@ class TaskList extends React.Component {
       )
   }
 
+  getFieldByName (task, fieldName) {
+    console.log(JSON.stringify(task.fields))
+    return find(task.fields, { spec: { name: fieldName}}).value
+  }
+
   render () {
     if (this.props.data.loading) {
       return (<Text style={{flex:1, textAlign:'center'}}>Loading</Text>);
@@ -84,8 +90,8 @@ class TaskList extends React.Component {
           <List>
             {
               [...this.props.data.tasks]
-              .filter((task) => this.state.filter == null ? true : task.fields.done == this.state.filter)
-              .sort((x, y) => y.fields.dueDate < x.fields.dueDate)
+              .filter((task) => this.state.filter == null ? true : this.getFieldByName(task, 'done') == this.state.filter)
+              .sort((x, y) => this.getFieldByName(y, 'dueDate') < this.getFieldByName(x, 'dueDate'))
               .map(task => (<TaskListItem key={task.id} task={task} />))
             }
           </List>
@@ -96,6 +102,6 @@ class TaskList extends React.Component {
 
 }
 
-const TaskListWithData = graphql(taskListQuery)(TaskList)
+const TaskListWithData = graphql(taskListQuery, {options: {variables: {mode: 'LIST'}}})(TaskList)
 
 export default TaskListWithData

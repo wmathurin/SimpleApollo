@@ -28,14 +28,23 @@
 
 export const personFragment = gql`
 fragment personFragment on Person {
-    firstName
-    lastName
+    fields {
+        spec {
+            name
+        }
+        value
+    }
 }
 `
 
 export const taskFragment = gql`
 fragment taskFragment on Task {
-    fields
+    fields {
+        spec {
+            name
+        }
+        value
+    }
     owner {
         id
         ... personFragment
@@ -64,4 +73,13 @@ query peopleQuery {
     }
 }
 ${personFragment}
+`
+export const taskFieldSpecs = gql`
+query taskFieldSpecsQuery ($mode: String!) {
+    taskFieldSpecs(mode: $mode) {
+        name
+        type
+        label
+    }
+}
 `
