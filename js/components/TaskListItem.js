@@ -36,12 +36,12 @@ import TaskToggler from './TaskToggler'
 class TaskListItem extends React.Component {
 
   deleteTask () {
-    const taskId = this.props.task.id
+    const taskId = this.props.task.Id
     this.props.deleteTask({
       variables: { taskId },
       update: (store, { data: { deleteTask: deletedTask } }) => {
         const data = store.readQuery({ query: taskListQuery });
-        data.tasks = data.tasks.filter((task) => task.id != deletedTask.id)
+        data.tasks = data.tasks.filter((task) => task.Id != deletedTask.Id)
         store.writeQuery({ query: taskListQuery, data });
       }
     })
@@ -50,11 +50,11 @@ class TaskListItem extends React.Component {
   render () {
     const task = this.props.task
 
-    const subtitle = `who: ${task.owner.fields.firstName} ${task.owner.fields.lastName}\n`
-      + `when: ${new Date(task.fields.dueDate).toLocaleString()}`
+    const subtitle = `who: ${task.owner.fields.FirstName} ${task.owner.fields.LastName}\n`
+      + `when: ${new Date(task.fields.Due_Date__c).toLocaleString()}`
 
     return (<ListItem
-              title={task.fields.title}
+              title={task.fields.Name}
               subtitle={subtitle}
               subtitleNumberOfLines={2}
               leftIcon={<Icon raised name='delete' color='grey' size={18} onPress={() => this.deleteTask()}/>}
@@ -66,7 +66,7 @@ class TaskListItem extends React.Component {
 const deleteTaskMutation = gql`
   mutation deleteTask($taskId: String!) {
     deleteTask(taskId: $taskId) {
-      id
+      Id
     }
   }
 `

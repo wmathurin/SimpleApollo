@@ -60,14 +60,14 @@ class TaskList extends React.Component {
            <ButtonGroup
              onPress={(index) => this.onChangeFilter(filterValues[index])}
              selectedIndex={selectedIndex}
-             buttons={labels}
-           />
+             buttons={labels} 
+            />
       )
   }
 
   render () {
     if (this.props.data.loading) {
-      return (<Text style={{flex:1, textAlign:'center'}}>Loading</Text>);
+      return null
     }
 
     console.log('data===>' + JSON.stringify(this.props.data))
@@ -86,14 +86,14 @@ class TaskList extends React.Component {
           <List>
             {
               [...this.props.data.tasks]
-              .filter((task) => this.state.filter == null ? true : task.fields.done == this.state.filter)
-              .sort((x, y) => y.fields.dueDate < x.fields.dueDate)
-              .map(task => (<TaskListItem key={task.id} task={task} />))
+              .filter((task) => this.state.filter == null ? true : task.fields.Done__c == this.state.filter)
+              .sort((x, y) => y.fields.Due_Date__c < x.fields.Due_Date__c)
+              .map(task => (<TaskListItem key={task.Id} task={task} />))
             }
           </List>
         </ScrollView>
       </View>
-    );
+    )
   }
 
 }

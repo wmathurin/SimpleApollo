@@ -32,9 +32,10 @@ import ModalSelector from 'react-native-modal-selector'
 import gql from 'graphql-tag'
 import { compose, graphql } from 'react-apollo'
 
+import EditField from './EditField'
 import { personFragment, taskFragment, taskListQuery } from '../gql/queries'
 
-const nameFromPerson = (person) => (person.fields.firstName == '' ? '' : person.fields.firstName + ' ') + person.fields.lastName
+const nameFromPerson = (person) => (person.fields.FirstName == '' ? '' : person.fields.FirstName + ' ') + person.fields.LastName
 
 class TaskCreator extends React.Component {
   constructor(...args) {
@@ -67,10 +68,23 @@ class TaskCreator extends React.Component {
     this.setState(this.initialState())
   }
 
+  renderFields() {
+    return this.props.data.taskLayout.map((fieldSpec) => {
+          return (
+            <EditField 
+              key={fieldSpec.name}
+              fieldSpec={fieldSpec} 
+              onChangeField={this.onChangeField.bind(this)} 
+              value={this.state.fields[fieldSpec.name]} 
+            />
+          )
+    })
+  }
+
   renderOwnerPicker() {
     const pickerData = this.props.data.people.map((person) => {
       return {
-        key: person.id,
+        key: person.Id,
         label: nameFromPerson(person)
       }
     })
@@ -97,13 +111,13 @@ class TaskCreator extends React.Component {
           disabled={this.state.title == '' || this.state.when == '' || this.state.whoId == ''}
           buttonStyle={{margin:10}}
           title='Save'
-          onPress={() => this.addTask()}
+          onPress={() => this.addTask()} 
         />
         <Button
             buttonStyle={{margin:10}}
             title='Cancel'
             onPress={() => this.setState(this.initialState())}
-          />
+        />
       </View>)
   }
 
@@ -113,51 +127,10 @@ class TaskCreator extends React.Component {
     this.setState({fields: newFields})
   }
 
-  renderField(fieldSpec) {
-    switch(fieldSpec.type) {
-      case 'STRING':
-        return (
-                <Input key={fieldSpec.name}
-                  placeholder={fieldSpec.label}
-                  value={this.state.fields[fieldSpec.name]}
-                  onChangeText={(text) => this.onChangeField(fieldSpec.name, text)}
-                />)          
-      case 'DATETIME':
-        const currentDateValue = new Date(this.state.fields[fieldSpec.name])
-        return (
-                <View style={{flexDirection:'row'}} key={fieldSpec.name}> 
-                  <TouchableOpacity onPress={() => this.refs[`datePicker_${fieldSpec.name}`].onPressDate()}>
-                    <Input
-                      pointerEvents='none'
-                      placeholder={fieldSpec.label}
-                      value={isNaN(currentDateValue.getTime()) ? '' : currentDateValue.toLocaleString()}
-                      editable={false}
-                      />
-                  </TouchableOpacity>
-                  <DatePicker
-                    ref={`datePicker_${fieldSpec.name}`}
-                    date={currentDateValue}
-                    style={{width:32}}
-                    mode='datetime'
-                    format='MM/DD/YYYY, h:mm:ss a'
-                    confirmBtnText='Confirm'
-                    cancelBtnText='Cancel'
-                    customStyles={ {btnTextConfirm: {color: colors.primary} } }
-                    showIcon={true}
-                    hideText={true}
-                    iconComponent={<Icon color='grey' name='calendar' type='font-awesome'/>}
-                    onDateChange={(date) => this.onChangeField(fieldSpec.name, new Date(date).getTime())}
-                  />
-                </View>)
-    }
-  }
-
   render () {
     if (this.props.data.loading) {
-      return (<Text style={{flex:1, textAlign:'center'}}>Loading</Text>);
+      return null
     }
-
-    console.log("data===>" + JSON.stringify(this.props.data))
 
     if (!this.state.isAdding) {
       return (
@@ -166,16 +139,18 @@ class TaskCreator extends React.Component {
           title='Add To Do' 
           onPress={() => { 
             this.setState({isAdding: true}) 
-          }}
-        />)
+          }} 
+        />
+      )
     }
     else {
       return (
         <Card title='Add To Do' containerStyle={{marginBottom:16}}>
-          {this.props.data.taskFieldSpecs.map((fieldSpec) => this.renderField(fieldSpec))}
+          {this.renderFields()}
           {this.renderOwnerPicker()}
           {this.renderButtons()}
-        </Card>)
+        </Card>
+      )
     }
   }
 }
@@ -183,7 +158,7 @@ class TaskCreator extends React.Component {
 const addTaskMutation = gql`
   mutation addTask($ownerId: String!, $fieldInputs: JSON!) {
     addTask(ownerId: $ownerId, fieldInputs: $fieldInputs) {
-      id
+      Id
       ... taskFragment
     }
   }
@@ -191,12 +166,12 @@ ${taskFragment}
 `
 
 const addTaskQuery = gql`
-  query addTaskQuery($mode: String!) {
+  query addTaskQuery($mode: Mode!) {
     people {
-      id
+      Id
       ... personFragment
     }
-    taskFieldSpecs (mode: $mode) {
+    taskLayout (mode: $mode) {
       name
       type 
       label
@@ -206,7 +181,7 @@ ${personFragment}
 `
 
 const TaskCreatorWithData = compose(
-  graphql(addTaskQuery, {options: { variables: { mode: 'CREATE'}}}),
+  graphql(addTaskQuery, {options: { variables: { mode: 'Create'}}}),
   graphql(addTaskMutation, {name : 'addTask'})
   )(TaskCreator)
 

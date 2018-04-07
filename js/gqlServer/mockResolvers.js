@@ -21,8 +21,7 @@
  * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
+i */
 
 import { find, findIndex, filter } from 'lodash'
 import GraphQLJSON from 'graphql-type-json'
@@ -31,26 +30,23 @@ const makeResolvers = () => {
 
     // Mock data
     var seq = 1
-    const now = (new Date()).getTime()
-    const due = now + 3600*8*1000
-    var me = { id:`${seq++}`, fields: { firstName:'Wolfgang', lastName:'Mathurin' } }
+    const now = new Date()
+    const due = new Date(now.getTime() + 3600*1000)
+    const otherDue = new Date(now.getTime() + 2*3600*1000)
+    var me = { Id:`${seq++}`, fields: { FirstName:'Wolfgang', LastName:'Mathurin' } }
     var allPeople = [ me ]
     var allTasks = [ 
-        { id:`${seq++}`, ownerId: me.id, fields: { title:'Get milk',  createdDate:now, dueDate:due, done:false } },
-        { id:`${seq++}`, ownerId: me.id, fields: { title:'Clean car', createdDate:now, dueDate:due, done:false } }, 
+        { Id:`${seq++}`, OwnerId: me.Id, fields: { Name:'Get milk',  CreatedDate:now, Due_Date__c:due, Done__c:true } },
+        { Id:`${seq++}`, OwnerId: me.Id, fields: { Name:'Clean car', CreatedDate:now, Due_Date__c:otherDue, Done__c:false } }, 
     ]
 
     // Mock meta-data
     const allTaskFieldSpecs = [
-        { id:`${seq++}`, name:'title', type: 'STRING', label: 'Title'},
-        { id:`${seq++}`, name:'createdDate', type: 'DATETIME', label: 'Created Date'},
-        { id:`${seq++}`, name:'dueDate', type: 'DATETIME', label: 'Due Date'},
-        { id:`${seq++}`, name:'done', type: 'CHECKBOX', label: 'Status'},
-    ]
-
-    const allPersonFieldSpecs = [
-        { id:`${seq++}`, name:'firstName', type: 'STRING', label: 'First Name'},
-        { id:`${seq++}`, name:'lastName', type: 'STRING', label: 'Last Name'},
+        { Id:`${seq++}`, name:'Name', type: 'String', label: 'Title'},
+        { Id:`${seq++}`, name:'CreatedDate', type: 'DateTime', label: 'Created Date'},
+        { Id:`${seq++}`, name:'Due_Date__c', type: 'DateTime', label: 'Due Date'},
+        { Id:`${seq++}`, name:'Done__c', type: 'Boolean', label: 'Status'},
+        { Id:`${seq++}`, name:'Category__c', type: 'String', label: 'Category'},
     ]
 
     return {
@@ -62,14 +58,11 @@ const makeResolvers = () => {
 
             tasks: () => allTasks,
 
-            peopleFieldSpecs: (_, { mode }) => allPersonFieldSpecs,
-
-            taskFieldSpecs: (_, { mode }) => {
+            taskLayout: (_, { mode }) => {
                 switch (mode) {
-                    case 'CREATE': return allTaskFieldSpecs.filter((spec) => ['title', 'dueDate'].includes(spec.name))
-                    case 'UPDATE': return allTaskFieldSpecs.filter((spec) => ['title', 'dueDate', 'done'].includes(spec.name))
-                    case 'LIST': return allTaskFieldSpecs.filter((spec) => ['title', 'dueDate', 'done'].includes(spec.name))            
-                    case 'ALL': return allTaskFieldSpecs
+                    case 'Create': return allTaskFieldSpecs.filter((spec) => ['Name', 'Due_Date__c', 'Category__c'].includes(spec.name))
+                    case 'Edit': 
+                    case 'View': return allTaskFieldSpecs.filter((spec) => ['Name', 'Due_Date__c', 'Done__c', 'Category__c'].includes(spec.name))            
                 }
             }
         },
@@ -77,31 +70,31 @@ const makeResolvers = () => {
         Mutation: {
 
             addTask: (_, { ownerId, fieldInputs }) => {            
-                const newTask = { id:`${seq++}`, ownerId: ownerId, fields: { ...fieldInputs, createdDate:(new Date()).getTime() } }
+                const newTask = { Id:`${seq++}`, OwnerId: ownerId, fields: { ...fieldInputs, CreatedDate:new Date() } }
                 allTasks.push(newTask)
-                console.log("new task" + JSON.stringify(newTask))
                 return newTask
             },
             updateTask: (_, { taskId, fieldInputs }) => {
-                const task = find(allTasks, {id: taskId })
+                const task = find(allTasks, {Id: taskId })
                 if (!task) {
-                    throw new Error(`Couldn't find task with id ${task.id}`)
+                    throw new Error(`Couldn't find task with id ${taskId}`)
                 }
                 task.fields = { ...task.fields, ...fieldInputs}
+
                 return task
             },
             deleteTask: (_, { taskId }) => {
-                const task = find(allTasks, {id: taskId })
+                const task = find(allTasks, {Id: taskId })
                 if (!task) {
-                    throw new Error(`Couldn't find task with id ${task.id}`)
+                    throw new Error(`Couldn't find task with id ${taskId}`)
                 }
-                allTasks = allTasks.filter((task) => task.id != taskId)
+                allTasks = allTasks.filter((task) => task.Id != taskId)
                 return task
             }
         },
 
         Task: {
-            owner: (task) => find(allPeople, { id: task.ownerId }),
+            owner: (task) => find(allPeople, { Id: task.OwnerId }),
         },
     }
 }

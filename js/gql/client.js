@@ -45,7 +45,7 @@ export const makeClient = (typeDefs, resolvers) => {
       ssr: true,
       link: new SchemaLink({schema}),
       cache: new InMemoryCache(),
-      dataIdFromObject: r => r.id,
+      dataIdFromObject: r => r.Id,
     })
 }
 

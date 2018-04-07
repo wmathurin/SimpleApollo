@@ -27,41 +27,38 @@
 export const typeDefs = `
 scalar JSON
 
-enum ModeType {
-    CREATE
-    UPDATE
-    VIEW
-    LIST
-    ALL
+enum Mode {
+    Create
+    Edit
+    View    
 }
 
 enum FieldType {
-    STRING
-    NUMBER
-    DATETIME
-    CHECKBOX
+    String
+    DateTime
+    Boolean
 }
 
 type FieldSpec {
-    id: String!
+    Id: String!
     name: String!
     type: FieldType
     label: String!
 }
 
 interface SObject {
-    id: String!
+    Id: String!
     fields: JSON!
 }
 
 type Task implements SObject {
-    id: String!
+    Id: String!
     fields: JSON!
     owner: Person!
 }
 
 type Person implements SObject {
-    id: String!
+    Id: String!
     fields: JSON!
 }
 
@@ -70,8 +67,7 @@ type Query {
 
     people: [Person]    
     tasks: [Task]
-    peopleFieldSpecs (mode: String!): [FieldSpec]
-    taskFieldSpecs (mode: String!): [FieldSpec]
+    taskLayout (mode: Mode!): [FieldSpec]
 
 }
 

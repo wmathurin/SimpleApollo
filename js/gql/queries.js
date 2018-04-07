@@ -36,7 +36,7 @@ export const taskFragment = gql`
 fragment taskFragment on Task {
     fields
     owner {
-        id
+        Id
         ... personFragment
     }
 }
@@ -47,7 +47,7 @@ ${personFragment}
 export const taskListQuery = gql`
 query taskListQuery {
     tasks {
-        id
+        Id
         ... taskFragment
     }
 }

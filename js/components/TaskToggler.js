@@ -31,12 +31,19 @@ import { graphql } from 'react-apollo'
 
 class TaskToggler extends React.Component {
 
+  constructor(...args) {
+    super(...args)
+    this.state = { done: this.props.task.fields.Done__c }
+  }
+
+
   toggleTask() {
-    const taskId = this.props.task.id
-    const done = !this.props.task.fields.done
-    const fieldInputs = { done }
+    const taskId = this.props.task.Id
+    const done = !this.state.done
+    const fieldInputs = { Done__c: done }
 
     this.props.updateTask({variables: {taskId, fieldInputs}})
+    this.setState({ done })
   }
 
   render() {
@@ -44,8 +51,8 @@ class TaskToggler extends React.Component {
     return (
       <CheckBox
         iconRight
-        checked={task.fields.done}
-        onPress={() => this.toggleTask()}
+        checked={this.state.done}
+        onPress={() => this.toggleTask()} 
       />
     )
   }
@@ -55,7 +62,7 @@ class TaskToggler extends React.Component {
 const updateTaskMutation = gql`
   mutation updateTask($taskId: String!, $fieldInputs: JSON!) {
     updateTask(taskId: $taskId, fieldInputs: $fieldInputs) {
-      id
+      Id
       fields
     }
   }
