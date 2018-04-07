@@ -190,9 +190,9 @@ There might not be much code that needs to move to support libraries.
 
 Dynamic meta data can mean different things:
 - the application might know all the object types it is dealing with (and their relationships) but not know all the fields it needs to fetch and/or display,
-- the application might not know all the object types or relationships.
+- the application might not know all the object types or relationships (universal record browser).
 
-I have only prototyped the first use case (dynamic field sets).
+For 'Steel Thread 2', I prototyped the first use case (dynamic field sets).
 For the code see [here](https://github.com/wmathurin/SimpleApollo/tree/9_todo_app_dynamic_fields/js).
 
 ### Dynamic field sets 
@@ -210,11 +210,6 @@ type Task implements SObject {
     Id: String!
     fields: JSON!
     owner: Person!
-}
-
-type Person implements SObject {
-    Id: String!
-    fields: JSON!
 }
 ```
 
@@ -251,21 +246,22 @@ In the Rest API resolver, we made use of ui-api to get layout and fields informa
 ```javascript
 const uiLayout = (objType, mode, callback, error) => net.sendRequest('/services/data', `/${net.getApiVersion()}/ui-api/layout/${objType}`, callback, error, "GET", {mode : mode})
 const uiObjectInfo = (objType, callback, error) => net.sendRequest('/services/data', `/${net.getApiVersion()}/ui-api/object-info/${objType}`, callback, error)
+
 ```
 
 We added a DataLoader to limit fetching the fields information.
 For instance to get Tasks, we first get the list of fields, then build a SOQL query from it.
 ```javascript
 tasks: () => {
-    return objectFieldsLoader.load('Task__c')
-        .then((infos) => { 
-            fieldInfos = infos; 
-            return netQuery(`select ${Object.keys(fieldInfos).join(',')} from Task__c LIMIT 256`)
-        })
-        .then((response) => { 
-            return processTaskSoqlResponse(fieldInfos, response) 
-        })
-}
+	    		return objectFieldsLoader.load('Task__c')
+	    			.then((infos) => { 
+	    				fieldInfos = infos; 
+	    				return netQuery(`select ${Object.keys(fieldInfos).join(',')} from Task__c LIMIT 256`)
+	    			})
+					.then((response) => { 
+						return processTaskSoqlResponse(fieldInfos, response) 
+					})
+	    	},
 ```
 
 We added a new class [EditField](https://github.com/wmathurin/SimpleApollo/blob/9_todo_app_dynamic_fields/js/components/EditField.js), to render any fields during edit. NB: At this point, we only support String and DateTime.
@@ -273,21 +269,22 @@ We added a new class [EditField](https://github.com/wmathurin/SimpleApollo/blob/
 Edit fields are not hardcoded in `TaskCreator` (except for relationship fields).
 Instead `TaskCreator` first queries the task layout for create (using the `taskLayout` graphql query we showed above) and iterates through the `FieldSpec`s and create `EditField` out of them.
 
-NB: When updating a task, we have to manually update the Apollo client cache, because `fields` is an object, it doesn't see it change. 
-See [here](https://github.com/wmathurin/SimpleApollo/blob/9_todo_app_dynamic_fields/js/components/TaskToggler.js)
 
 ### Findings
-GraphQL is a strongly typed runtime which allows clients to ask for exactely what they need and nothing more. It is especially good for querying a graph of objects.
-The more dynamic the application needs to be, the less useful GraphQL becomes. In the extreme case, one will end up defining queries reminiscent of what we do with Rest APIs.
-```
-query getObject($type: String!, $mode: Mode!) {
-	objects {
-		Id
-		fields
-	}
-}
-```
+By using a custom scalar type (JSON) to represent arbitrary field sets, we are able to support dynamic field sets with GraphQL.
+Such JSON fields are opaque to the GraphQL client and therefore the app and resolvers will have to be careful when manipulating them.
 
-So it is possible to deal with dynamic meta data, but it will require more work in the resolvers and the application (e.g. updating the graphql cache client manually for any mutations).
+Cache consistency will require some manual work in the app. In our app, we had to manually update the cache when changing the status of a todo: see [here](https://github.com/wmathurin/SimpleApollo/blob/9_todo_app_dynamic_fields/js/components/TaskToggler.js).
+
+If some queries bring more fields than others for the same record, one might have to `refetch` more often or use different types based on the field sets.
+
+### More dynamic apps
+If your application requires more than dynamic fields sets, if the object types or relationships are not known, you can still use GraphQL.
+An extreme implementation could have no types in the schema and simply queries that mirror the Rest API backend: e.g. queries that take type, id, mode (or layout id) and return JSON.
+
+GraphQL would not help with type checking, avoiding over fetching, getting related objects elegantly or maintaining consistency across UI components. 
+It would still help with separating data sources from UI: your UI components would still be "pure" views (only getting data through props), and the GraphQL client's HOC (high order component) would still provide a way to combine the requests of all the UI components and distribute back the responses to all components.
+
+Our recommendation is to use strong types whenever possible (see data in Steel Thread 1 or meta data in Steel Thread 2), dynamic fields (see Task in Steel Thread 2) if required and arbitrary JSON responses only when unavoidable.
 
 </details>
