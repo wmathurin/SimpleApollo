@@ -189,27 +189,29 @@ There might not be much code that needs to move to support libraries.
 <details><summary>[expand]</summary>
 
 Dynamic meta data can mean different things:
-- the application might know all the object types it is dealing with (and their relationships) but not know all the fields it needs to fetch and/or display 
-- the application might not know all the object types or relationships 
+- the application might know all the object types it is dealing with (and their relationships) but not know all the fields it needs to fetch and/or display,
+- the application might not know all the object types or relationships.
 
 I have only prototyped the first use case (dynamic field sets).
-For the code see [here](https://github.com/wmathurin/SimpleApollo/tree/9_todo_app_dynamic_fields/js)
+For the code see [here](https://github.com/wmathurin/SimpleApollo/tree/9_todo_app_dynamic_fields/js).
 
 ### Dynamic field sets 
 We added a custom scalar type to represent arbitrary field sets.
-We used [graphql-type-json](https://github.com/taion/graphql-type-json)
+We used [graphql-type-json](https://github.com/taion/graphql-type-json).
 
 The schema for Task and User now looks like:
-```
+```javascript
 interface SObject {
     Id: String!
     fields: JSON!
 }
+
 type Task implements SObject {
     Id: String!
     fields: JSON!
     owner: Person!
 }
+
 type Person implements SObject {
     Id: String!
     fields: JSON!
@@ -217,12 +219,13 @@ type Person implements SObject {
 ```
 
 There are new types to describe meta data and a query to get the layout also:
-```
+```javascript
 enum Mode {
     Create
     Edit
     View    
 }
+
 enum FieldType {
     String
     DateTime
@@ -231,6 +234,7 @@ enum FieldType {
     Number
     Picklist
 }
+
 type FieldSpec {
     Id: String!
     name: String!
@@ -247,22 +251,21 @@ In the Rest API resolver, we made use of ui-api to get layout and fields informa
 ```javascript
 const uiLayout = (objType, mode, callback, error) => net.sendRequest('/services/data', `/${net.getApiVersion()}/ui-api/layout/${objType}`, callback, error, "GET", {mode : mode})
 const uiObjectInfo = (objType, callback, error) => net.sendRequest('/services/data', `/${net.getApiVersion()}/ui-api/object-info/${objType}`, callback, error)
-
 ```
 
 We added a DataLoader to limit fetching the fields information.
 For instance to get Tasks, we first get the list of fields, then build a SOQL query from it.
 ```javascript
 tasks: () => {
-	    		return objectFieldsLoader.load('Task__c')
-	    			.then((infos) => { 
-	    				fieldInfos = infos; 
-	    				return netQuery(`select ${Object.keys(fieldInfos).join(',')} from Task__c LIMIT 256`)
-	    			})
-					.then((response) => { 
-						return processTaskSoqlResponse(fieldInfos, response) 
-					})
-	    	},
+    return objectFieldsLoader.load('Task__c')
+        .then((infos) => { 
+            fieldInfos = infos; 
+            return netQuery(`select ${Object.keys(fieldInfos).join(',')} from Task__c LIMIT 256`)
+        })
+        .then((response) => { 
+            return processTaskSoqlResponse(fieldInfos, response) 
+        })
+}
 ```
 
 We added a new class [EditField](https://github.com/wmathurin/SimpleApollo/blob/9_todo_app_dynamic_fields/js/components/EditField.js), to render any fields during edit. NB: At this point, we only support String and DateTime.
