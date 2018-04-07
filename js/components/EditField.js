@@ -78,7 +78,8 @@ class EditField extends React.Component {
         )
 
       default:
-        throw new Error(`Don't know how to handle field type {JSON.stringify(fieldSpec)}`)
+        console.log(`Don't know how to handle field  ${JSON.stringify(fieldSpec)}`)
+        return null
     }
   }
 }

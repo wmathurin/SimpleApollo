@@ -70,8 +70,6 @@ class TaskList extends React.Component {
       return null
     }
 
-    console.log('data===>' + JSON.stringify(this.props.data))
-
     return (
       <View style={{flex:1}}>
         {this.renderFilterButtonGroup()}
@@ -87,7 +85,7 @@ class TaskList extends React.Component {
             {
               [...this.props.data.tasks]
               .filter((task) => this.state.filter == null ? true : task.fields.Done__c == this.state.filter)
-              .sort((x, y) => y.fields.Due_Date__c < x.fields.Due_Date__c)
+              .sort((x, y) => new Date(y.fields.Due_Date__c).getTime() < new Date(x.fields.Due_Date__c).getTime())
               .map(task => (<TaskListItem key={task.Id} task={task} />))
             }
           </List>

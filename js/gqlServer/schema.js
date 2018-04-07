@@ -37,6 +37,9 @@ enum FieldType {
     String
     DateTime
     Boolean
+    Reference
+    Number
+    Picklist
 }
 
 type FieldSpec {

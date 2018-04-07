@@ -29,21 +29,24 @@ import { CheckBox } from 'react-native-elements'
 import gql from 'graphql-tag'
 import { graphql } from 'react-apollo'
 
+import { taskListQuery } from '../gql/queries'
+
+
 class TaskToggler extends React.Component {
-
-  constructor(...args) {
-    super(...args)
-    this.state = { done: this.props.task.fields.Done__c }
-  }
-
 
   toggleTask() {
     const taskId = this.props.task.Id
-    const done = !this.state.done
+    const done = !this.props.task.fields.Done__c
     const fieldInputs = { Done__c: done }
 
-    this.props.updateTask({variables: {taskId, fieldInputs}})
-    this.setState({ done })
+    this.props.updateTask({
+      variables: { taskId, fieldInputs },
+      update: (store, { data: { updateTask: updatedTask } }) => {
+        // Doesn't automatically update cache 
+        const data = store.readQuery({ query: taskListQuery });
+        data.tasks = data.tasks.map((task) => task.Id != taskId ? task : { ...task, fields: {...task.fields, Done__c: done}})
+        store.writeQuery({ query: taskListQuery, data });      }
+    })
   }
 
   render() {
@@ -51,7 +54,7 @@ class TaskToggler extends React.Component {
     return (
       <CheckBox
         iconRight
-        checked={this.state.done}
+        checked={this.props.task.fields.Done__c}
         onPress={() => this.toggleTask()} 
       />
     )
