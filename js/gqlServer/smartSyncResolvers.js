@@ -24,7 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {net, smartstore, smartsync, forceUtil} from 'react-native-force'
+import {smartstore, smartsync, forceUtil} from 'react-native-force'
 import DataLoader from 'dataloader'
 
 const runSmartQuery = forceUtil.promiser(smartstore.runSmartQuery);
@@ -32,23 +32,18 @@ const upsertSoupEntries = forceUtil.promiser(smartstore.upsertSoupEntries);
 const removeFromSoup = forceUtil.promiser(smartstore.removeFromSoup);
 const retrieveSoupEntries = forceUtil.promiser(smartstore.retrieveSoupEntries);
  
-// ui api
-const uiLayout = (objType, mode, callback, error) => net.sendRequest('/services/data', `/${net.getApiVersion()}/ui-api/layout/${objType}`, callback, error, "GET", {mode : mode})
-const uiObjectInfo = (objType, callback, error) => net.sendRequest('/services/data', `/${net.getApiVersion()}/ui-api/object-info/${objType}`, callback, error)
-
-netUiLayout = forceUtil.promiser(uiLayout)
-netUiObjectInfo = forceUtil.promiser(uiObjectInfo)
-
-
 //
 // Note: you need to create custom object on server called Task__c with following custom fields
 // - Due_Date__c : DateTime
 // - Done__c: Checkbox
 //
 const uuidv4 = () => {
-	return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-		(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-		)
+  const s4 = () => {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
 const promiserNoRejection = (func) => {
@@ -78,6 +73,14 @@ const reSync = promiserNoRejection(smartsync.reSync);
 
 const makeResolvers = () => {
 
+	// Hard coded meta-data
+    const allTaskFieldSpecs = [
+        { Id:uuidv4(), name:'Name', type: 'String', label: 'Title'},
+        { Id:uuidv4(), name:'CreatedDate', type: 'DateTime', label: 'Created Date'},
+        { Id:uuidv4(), name:'Due_Date__c', type: 'DateTime', label: 'Due Date'},
+        { Id:uuidv4(), name:'Done__c', type: 'Boolean', label: 'Status'},
+    ]
+
 	const storeConfig = {isGlobalStore: false}
 
 	const runSmartSql = (sql) => {
@@ -86,12 +89,16 @@ const makeResolvers = () => {
 			queryType:'smart', 
 			smartSql: sql,
 			pageSize: 256
-		})		
+		})
+		.then((result) => {
+			return result.currentPageOrderedEntries
+		})
 	}
 
 	// Response processors
-	const processUserSmartSqlResult = (result) => { 
-		return result.currentPageOrderedEntries.map((row) => {
+	const processUserSmartSqlResult = (rows) => { 
+		console.log("rows====>" + JSON.stringify(rows))
+		return rows.map((row) => {
 			return {
 				Id: row[0].Id,
 				fields: {
@@ -102,18 +109,18 @@ const makeResolvers = () => {
 		})
 	}
 
-	const processTaskSmartSqlResult = (fieldInfos, result) => { 
-		return result.currentPageOrderedEntries.map((row) => {
+	const processTaskSmartSqlResult = (rows) => { 
+		console.log("rows====>" + JSON.stringify(rows))
+		return rows.map((row) => {
 			const task = {
 				Id: row[0].Id,
 				OwnerId: row[0].OwnerId,
 				fields: {
+					Name: row[0].Name,
+					Due_Date__c: row[0].Due_Date__c,
+					Done__c: row[0].Due_Date__c
 				}				
 			}
-
-			Object.keys(fieldInfos).forEach((apiName) => {
-				task.fields[apiName] = row[0][apiName]
-			})
 
 			return task
 		})
@@ -127,12 +134,6 @@ const makeResolvers = () => {
 		.then(processUserSmartSqlResult)
 	})	
 
-	const objectFieldsLoader = new DataLoader((objTypes) => {
-		console.log(`===> SERVER OBJECT-INFO ${objTypes[0]}`)	
-		return netUiObjectInfo(objTypes[0])
-		.then((response) => [response.fields])
-	}, {batch: false})	
-
 	return {	
 		Query: {
 			people: () => {
@@ -141,36 +142,26 @@ const makeResolvers = () => {
 				.then(processUserSmartSqlResult)
 				.then((people) => {
 					people.forEach((person) => {
-						peopleLoader.prime(person.id, person)
+						peopleLoader.prime(person.Id, person)
 					})	    			
 					return people
 				})
 			},
 
 			tasks: () => {
-				return objectFieldsLoader.load('Task__c')
-	    			.then((infos) => { 
-	    				fieldInfos = infos; 
-	    				return reSync(storeConfig, 'syncDownTasks')
-	    			})
-	    			.then(() => runSmartSql('select {Task__c:_soup} from {Task__c}'))
-					.then((result) => { 
-						return processTaskSmartSqlResult(fieldInfos, result) 
-					})
+				return reSync(storeConfig, 'syncDownTasks')
+				.then(() => runSmartSql('select {Task__c:_soup} from {Task__c}'))
+				.then(processTaskSmartSqlResult)
 			},
 
 			taskLayout: (_, { mode }) => {
-				console.log(`===> SERVER LAYOUT: Task__c ${mode}`)
-				var fieldInfos;
-				return objectFieldsLoader.load('Task__c')	    		
-				.then((infos) => { 
-					fieldInfos = infos; 
-					return netUiLayout('Task__c', 'Create') 
-				})
-				.then((response) => { 
-					return extractFieldSpecs(fieldInfos, response) 
-				})
-			},			
+				switch (mode) {
+					case 'Create': return allTaskFieldSpecs.filter((spec) => ['Name', 'Due_Date__c'].includes(spec.name))
+					case 'Edit': 
+					case 'View': return allTaskFieldSpecs.filter((spec) => ['Name', 'Due_Date__c', 'Done__c'].includes(spec.name))            
+				}
+			},
+
 		},
 
 		Mutation: {
@@ -191,29 +182,38 @@ const makeResolvers = () => {
 				// 	}
 				// })
 			},
-	        updateTask: (_, { taskId, fieldInputs }) => {
-	    		// return runSmartSql(`select {Task__c:_soup} from {Task__c} where {Task__c:Id} = '${taskId}'`)
-	    		// .then(processTaskSmartSqlResult)
-	    		// .then((tasks) => {
-	    		// 	return upsertSoupEntries(storeConfig, 'Task__c', [{
-	    		// 		... tasks[0],
-	    		// 		done: done
-	    		// 	}])
-	    		// })
-		     //    .then(() => {
-		     //    	return {
-		     //    		id: taskId,
-		     //    		done
-		     //    	}
-		     //    })
-	        },
+			updateTask: (_, { taskId, fieldInputs }) => {
+				return runSmartSql(`select {Task__c:_soup} from {Task__c} where {Task__c:Id} = '${taskId}'`)
+				.then((rows) => {
+					const task = rows[0][0]
+					const updatedTask = { ... task, ... fieldInputs, __local__: true, __locally_updated__: true }
+					return upsertSoupEntries(storeConfig, 'Task__c', [updatedTask])
+				})
+				.then((tasks) => {
+					return reSync(storeConfig, 'syncUpTasks')
+				})
+				.then(() => {
+					return {
+						Id: taskId,
+						fields: fieldInputs
+					}
+				})
+			},
 	        deleteTask: (_, { taskId }) => {
-	        	// return removeFromSoup(storeConfig, 'Task__c', {queryType:'exact', indexPath:'Id', matchKey:taskId, order: 'ascending', pageSize:1})
-	        	// .then(() => {
-	        	// 	return {
-	        	// 		id: taskId
-	        	// 	}
-	        	// })        				        
+	        	return runSmartSql(`select {Task__c:_soup} from {Task__c} where {Task__c:Id} = '${taskId}'`)
+	        	.then((rows) => {
+	        		const task = rows[0][0]
+	        		const deletedTask = { ... task, __local__: true, __locally_deleted__: true }
+	        		return upsertSoupEntries(storeConfig, 'Task__c', [deletedTask])
+	        	})
+	        	.then((tasks) => {
+	        		return reSync(storeConfig, 'syncUpTasks')
+	        	})
+	        	.then(() => {
+	        		return {
+	        			Id: taskId,
+	        		}
+	        	})     				        
 	        }
 	    },
 

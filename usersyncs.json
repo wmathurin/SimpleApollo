@@ -18,7 +18,7 @@
       "syncName": "syncUpTasks",
       "syncType": "syncUp",
       "soupName": "Task__c",
-      "options": {"mergeMode":"OVERWRITE"}
+      "options": {"fieldlist":["Name", "Due_Date__c", "Done__c"], "mergeMode":"OVERWRITE"}
     }
   ]
 }

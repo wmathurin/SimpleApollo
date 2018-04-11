@@ -132,9 +132,10 @@ const makeResolvers = () => {
 
 	    	tasks: () => {
 	    		console.log('===> SERVER SOQL: all Task__c')
+	    		var fieldInfos
 	    		return objectFieldsLoader.load('Task__c')
 	    			.then((infos) => { 
-	    				fieldInfos = infos; 
+	    				fieldInfos = infos
 	    				return netQuery(`select ${Object.keys(fieldInfos).join(',')} from Task__c LIMIT 256`)
 	    			})
 					.then((response) => { 
@@ -144,10 +145,10 @@ const makeResolvers = () => {
 
 	    	taskLayout: (_, { mode }) => {
 	    		console.log(`===> SERVER LAYOUT: Task__c ${mode}`)
-	    		var fieldInfos;
+	    		var fieldInfos
 	    		return objectFieldsLoader.load('Task__c')	    		
 	    			.then((infos) => { 
-	    				fieldInfos = infos; 
+	    				fieldInfos = infos 
 	    				return netUiLayout('Task__c', 'Create') 
 	    			})
 	    			.then((response) => { 
