@@ -95,35 +95,55 @@ const makeResolvers = () => {
 		})
 	}
 
-	// Response processors
-	const processUserSmartSqlResult = (rows) => { 
-		console.log("rows====>" + JSON.stringify(rows))
-		return rows.map((row) => {
-			return {
-				Id: row[0].Id,
-				fields: {
-					FirstName: row[0].FirstName,
-					LastName: row[0].LastName
-				}
+	const fixDateFields = (obj) => {
+		console.log("obj-1-->" + JSON.stringify(obj))
+		Object.keys(obj).map((key) => {
+			const value = obj[key]
+			if (value instanceof Date || (value instanceof String && !isNaN(new Date(value).getTime()))) {
+				obj[key] = new Date(value).toISOString()
 			}
 		})
+		console.log("obj--2->" + JSON.stringify(obj))
+		return obj
+	}
+
+	// Response processors
+	const formatUser = (user) => {
+		return {
+			Id: user.Id,
+			fields: {
+				FirstName: user.FirstName,
+				LastName: user.LastName
+			}		
+		}
+	}
+
+	const formatTask = (task) => {
+		console.log("in-task==>" + JSON.stringify(task))
+		const formattedTask = {
+			Id: task.Id,
+			OwnerId: task.OwnerId,
+			fields: {
+				Name: task.Name,
+				Due_Date__c: task.Due_Date__c,
+				Done__c: task.Done__c
+			}				
+		}
+		console.log("out-task==>" + JSON.stringify(formattedTask))
+		return formattedTask
+	}
+
+	const processUserSmartSqlResult = (rows) => { 
+		console.log("rows====>" + JSON.stringify(rows))
+		return rows
+		.map((row) => formatUser(row[0]))
 	}
 
 	const processTaskSmartSqlResult = (rows) => { 
 		console.log("rows====>" + JSON.stringify(rows))
-		return rows.map((row) => {
-			const task = {
-				Id: row[0].Id,
-				OwnerId: row[0].OwnerId,
-				fields: {
-					Name: row[0].Name,
-					Due_Date__c: row[0].Due_Date__c,
-					Done__c: row[0].Due_Date__c
-				}				
-			}
-
-			return task
-		})
+		return rows
+		.filter((row) => !row[0].__locally_deleted__)
+		.map((row) => formatTask(row[0]))
 	}
 
 	// Data loader
@@ -149,7 +169,8 @@ const makeResolvers = () => {
 			},
 
 			tasks: () => {
-				return reSync(storeConfig, 'syncDownTasks')
+				return reSync(storeConfig, 'syncUpTasks')
+				.then(() => reSync(storeConfig, 'syncDownTasks'))
 				.then(() => runSmartSql('select {Task__c:_soup} from {Task__c}'))
 				.then(processTaskSmartSqlResult)
 			},
@@ -165,22 +186,22 @@ const makeResolvers = () => {
 		},
 
 		Mutation: {
-            addTask: (_, { ownerId, fieldInputs }) => {            
-				// return upsertSoupEntries(storeConfig, 'Task__c', [{
-				// 	Id:`local_${uuidv4()}`,
-				// 	Name:title, 
-				// 	OwnerId:ownerId, 
-				// 	Due_Date__c:new Date(dueDate).toISOString()
-				// }])
-				// .then((result) => {
-				// 	return {
-				// 		id: result[0].Id,
-				// 		title,
-				// 		dueDate,
-				// 		ownerId,
-				// 		done: false
-				// 	}
-				// })
+            addTask: (_, { ownerId, fieldInputs }) => { 
+            	console.log("HERE---->")
+            	const newTask = { 
+            		Id:`local_${uuidv4()}`, 
+            		OwnerId: ownerId, 
+            		...fieldInputs, 
+            		CreatedDate:new Date(),
+            		__local__:true, 
+            		__locally_created__: true,
+            		attributes: {
+            			type: 'Task__c'
+            		}
+            	}
+
+				return upsertSoupEntries(storeConfig, 'Task__c', [fixDateFields(newTask)])
+				.then((tasks) => formatTask(tasks[0]))
 			},
 			updateTask: (_, { taskId, fieldInputs }) => {
 				return runSmartSql(`select {Task__c:_soup} from {Task__c} where {Task__c:Id} = '${taskId}'`)
@@ -188,9 +209,6 @@ const makeResolvers = () => {
 					const task = rows[0][0]
 					const updatedTask = { ... task, ... fieldInputs, __local__: true, __locally_updated__: true }
 					return upsertSoupEntries(storeConfig, 'Task__c', [updatedTask])
-				})
-				.then((tasks) => {
-					return reSync(storeConfig, 'syncUpTasks')
 				})
 				.then(() => {
 					return {
@@ -205,9 +223,6 @@ const makeResolvers = () => {
 	        		const task = rows[0][0]
 	        		const deletedTask = { ... task, __local__: true, __locally_deleted__: true }
 	        		return upsertSoupEntries(storeConfig, 'Task__c', [deletedTask])
-	        	})
-	        	.then((tasks) => {
-	        		return reSync(storeConfig, 'syncUpTasks')
 	        	})
 	        	.then(() => {
 	        		return {
