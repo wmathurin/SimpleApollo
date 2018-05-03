@@ -288,3 +288,90 @@ It would still help with separating data sources from UI: your UI components wou
 Our recommendation is to use strong types whenever possible (see data in Steel Thread 1 or meta data in Steel Thread 2), dynamic fields (see Task in Steel Thread 2) if required and arbitrary JSON responses only when unavoidable.
 
 </details>
+
+## Steel Thread 3: Offline first (using SmartSync)
+
+<details><summary>[expand]</summary>
+
+Steel thread 3 uses Steel thread 2's schema but does not actually fetches layout or object info from server.
+(As of Mobile SDK 6.1, we don't have a sync target to get metadata out of the box - but it's coming in Mobile SDK 6.2)
+
+### Store and syncs configs
+
+The store schema is defined using the following config file
+```javascript
+{
+  "soups": [
+    {
+      "soupName": "Task__c",
+      "indexes": [
+        { "path": "Id", "type": "string"},
+        { "path": "OwnerId", "type": "string"},
+        { "path": "__local__", "type": "string"}
+      ]
+    },
+    {
+    "soupName": "User",
+    "indexes": [
+        { "path": "Id", "type": "string"},
+        { "path": "__local__", "type": "string"}
+      ]
+    }
+  ]
+}
+```
+
+The syncs are defined using the following config file
+```javascript
+{
+  "syncs": [
+    {
+      "syncName": "syncDownTasks",
+      "syncType": "syncDown",
+      "soupName": "Task__c",
+      "target": {"type":"soql", "query":"select Id, Name, FORMAT(CreatedDate), FORMAT(Due_Date__c), Done__c, OwnerId from Task__c"},
+      "options": {"mergeMode":"OVERWRITE"}
+    },
+    {
+      "syncName": "syncDownUsers",
+      "syncType": "syncDown",
+      "soupName": "User",
+      "target": {"type":"soql", "query":"select Id, FirstName, LastName from User"},
+      "options": {"mergeMode":"OVERWRITE"}
+    },
+    {
+      "syncName": "syncUpTasks",
+      "syncType": "syncUp",
+      "soupName": "Task__c",
+      "options": {"fieldlist":["Name", "Due_Date__c", "Done__c"], "mergeMode":"OVERWRITE"}
+    }
+  ]
+}
+```
+
+### SmartSync Resolvers
+
+A new set of resolvers was implemented
+
+To seemlessly work offline or online, we implemented a reSync javascript method that returns a promise that resolves whether sync succeeeded or failed.
+```javascript
+const promiserNoRejection = (func) => {
+    // resolves promise from success and error callback
+}
+
+const reSync = promiserNoRejection(smartsync.reSync);
+```
+
+Queries:
+- people: (re)sync down the users and then queries smartstore,
+- tasks: (re)sync up the tasks, (re)sync down the tasks and then queries smartstore (filtering out locally deleted records) => ** that way when doing a pull to refresh the data gets synched **,
+- taskLayout: returns hard-coded meta data.
+
+Mutations:
+- addTask: create a new task locally in SmartStore and set the locally created flag to true,
+- updateTask: update task in SmartStore and set the locally deleted flag to true,
+- deleteTask: mark task in SmartStore as locally deleted.
+
+
+</details>
+

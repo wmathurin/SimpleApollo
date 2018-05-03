@@ -98,3 +98,16 @@ Added Android support. There was not much to do. One of the dependency ([vector 
 
 </details>
 
+## 9_todo_app_dynamic_fields
+<details><summary>[expand]</summary>
+
+See Steel Thread 2 in [OVERVIEW](https://github.com/wmathurin/SimpleApollo/blob/dev/OVERVIEW.md) for more details
+
+</details>
+
+## 10_todo_app_smartsync
+<details><summary>[expand]</summary>
+
+See Steel Thread 3 in [OVERVIEW](https://github.com/wmathurin/SimpleApollo/blob/dev/OVERVIEW.md) for more details
+
+</details>
