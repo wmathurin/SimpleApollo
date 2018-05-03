@@ -208,7 +208,7 @@ const makeResolvers = () => {
 				.then((rows) => {
 					const task = rows[0][0]
 					const updatedTask = { ... task, ... fieldInputs, __local__: true, __locally_updated__: true }
-					return upsertSoupEntries(storeConfig, 'Task__c', [updatedTask])
+					return upsertSoupEntries(storeConfig, 'Task__c', [fixDateFields(updatedTask)])
 				})
 				.then(() => {
 					return {
