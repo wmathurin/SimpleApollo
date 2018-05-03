@@ -351,7 +351,7 @@ The syncs are defined using the following config file
 
 ### SmartSync Resolvers
 
-A new set of resolvers was implemented
+A new set of resolvers was implemented.
 
 To seemlessly work offline or online, we implemented a reSync javascript method that returns a promise that resolves whether sync succeeeded or failed.
 ```javascript
@@ -364,7 +364,7 @@ const reSync = promiserNoRejection(smartsync.reSync);
 
 Queries:
 - people: (re)sync down the users and then queries smartstore,
-- tasks: (re)sync up the tasks, (re)sync down the tasks and then queries smartstore (filtering out locally deleted records) => ** that way when doing a pull to refresh the data gets synched **,
+- tasks: (re)sync up the tasks, (re)sync down the tasks and then queries smartstore (filtering out locally deleted records) => **that way when doing a pull to refresh the data gets synched**,
 - taskLayout: returns hard-coded meta data.
 
 Mutations:
@@ -372,6 +372,20 @@ Mutations:
 - updateTask: update task in SmartStore and set the locally deleted flag to true,
 - deleteTask: mark task in SmartStore as locally deleted.
 
+For sync up to work, we had to make sure that dates stored in smartstore were in the ISO format.
+For that purpose we added a helper function and ran any created or updated to task through before saving it.
+
+```javascript
+const fixDateFields = (obj) => {
+    Object.keys(obj).map((key) => {
+        const value = obj[key]
+        if (value instanceof Date || (typeof value === 'string' && !isNaN(new Date(value).getTime()))) {
+            obj[key] = new Date(value).toISOString()
+        }
+    })
+    return obj
+}
+```
 
 </details>
 
