@@ -99,7 +99,7 @@ const makeResolvers = () => {
 		console.log("obj-1-->" + JSON.stringify(obj))
 		Object.keys(obj).map((key) => {
 			const value = obj[key]
-			if (value instanceof Date || (value instanceof String && !isNaN(new Date(value).getTime()))) {
+			if (value instanceof Date || (typeof value === 'string' && !isNaN(new Date(value).getTime()))) {
 				obj[key] = new Date(value).toISOString()
 			}
 		})
