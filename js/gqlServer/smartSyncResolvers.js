@@ -96,14 +96,12 @@ const makeResolvers = () => {
 	}
 
 	const fixDateFields = (obj) => {
-		console.log("obj-1-->" + JSON.stringify(obj))
 		Object.keys(obj).map((key) => {
 			const value = obj[key]
 			if (value instanceof Date || (typeof value === 'string' && !isNaN(new Date(value).getTime()))) {
 				obj[key] = new Date(value).toISOString()
 			}
 		})
-		console.log("obj--2->" + JSON.stringify(obj))
 		return obj
 	}
 
@@ -119,7 +117,6 @@ const makeResolvers = () => {
 	}
 
 	const formatTask = (task) => {
-		console.log("in-task==>" + JSON.stringify(task))
 		const formattedTask = {
 			Id: task.Id,
 			OwnerId: task.OwnerId,
@@ -129,18 +126,15 @@ const makeResolvers = () => {
 				Done__c: task.Done__c
 			}				
 		}
-		console.log("out-task==>" + JSON.stringify(formattedTask))
 		return formattedTask
 	}
 
 	const processUserSmartSqlResult = (rows) => { 
-		console.log("rows====>" + JSON.stringify(rows))
 		return rows
 		.map((row) => formatUser(row[0]))
 	}
 
 	const processTaskSmartSqlResult = (rows) => { 
-		console.log("rows====>" + JSON.stringify(rows))
 		return rows
 		.filter((row) => !row[0].__locally_deleted__)
 		.map((row) => formatTask(row[0]))
@@ -187,7 +181,6 @@ const makeResolvers = () => {
 
 		Mutation: {
             addTask: (_, { ownerId, fieldInputs }) => { 
-            	console.log("HERE---->")
             	const newTask = { 
             		Id:`local_${uuidv4()}`, 
             		OwnerId: ownerId, 
